@@ -110,35 +110,106 @@
         }
 
         @media print {
-            body { background-color:var(--background-light) !important; padding:0; margin:0; font-size:9pt !important; -webkit-print-color-adjust:exact !important; color-adjust:exact !important; }
-            /* Hide everything except the invoice preview container */
-            body > *:not(.invoice-preview-area) { display:none !important; }
-            .invoice-form-section, .main-actions-container, .app-container > h2 /* if any global title exists */ { display:none !important; }
+    /* --- أساسيات الصفحة للطباعة --- */
+    body {
+        background-color: var(--background-light) !important; /* خلفية بيضاء للطباعة */
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 9pt !important; /* حجم خط مناسب للطباعة */
+        -webkit-print-color-adjust: exact !important; /* لطباعة ألوان الخلفية */
+        color-adjust: exact !important;
+    }
 
-            .invoice-preview-area {
-                display:block !important; width:100% !important; max-width:none !important;
-                margin:0 !important; padding:0 !important; box-shadow:none !important; border:none !important;
-                position: static !important; /* Reset position if it was absolute */
-            }
-            .invoice-content {
-                padding:15mm !important; page-break-after:always;
-                box-shadow:none !important; border:none !important;
-                font-size:9pt !important; /* Ensure consistent font size */
-            }
-            /* Restore desktop-like layouts for print if they were changed for mobile */
-            .preview-header { flex-direction:row !important; align-items:flex-start !important; text-align:inherit !important;}
-            .preview-header-left, .preview-header-right { text-align:inherit !important; }
-            .preview-meta-info { flex-direction:row !important; }
-            .invoice-items-wrapper { overflow-x:visible !important; }
-            .items-table-preview { min-width:unset !important; width:100% !important; font-size:8.5pt !important; }
-            .items-table-preview th, .items-table-preview td { padding:4px 6px !important; }
-            .preview-summary { justify-content: flex-end !important; }
-            .preview-summary table { width:50% !important; }
-            /* Ensure background colors print if desired by user browser settings */
-            .items-table-preview th { background-color: var(--theme-color) !important; color: var(--text-color-light) !important; }
-            .items-table-preview tbody tr:nth-child(even) td { background-color: #f8f8f8 !important; }
-            .preview-summary .grand-total td { background-color: var(--theme-color-dark) !important; color: var(--text-color-light) !important; }
-        }
+    /* --- إخفاء كل شيء عدا الفاتورة --- */
+    /* الطريقة الأكثر أمانًا هي إخفاء العناصر المحددة التي لا نريدها */
+    .invoice-form-section,
+    .main-actions-container,
+    .app-container > h2 /* إذا كان لديك عنوان رئيسي للتطبيق خارج النموذج */ {
+        display: none !important;
+    }
+    /* تأكد أن حاوية التطبيق نفسها لا تتداخل إذا لم تكن مخفية بالكامل */
+    .app-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        gap: 0 !important; /* إزالة أي فراغات */
+    }
+
+
+    /* --- إعدادات حاوية معاينة الفاتورة للطباعة --- */
+    .invoice-preview-area {
+        display: block !important; /* تأكد من أنها block level */
+        width: 100% !important;    /* اجعلها تأخذ عرض الصفحة بالكامل */
+        max-width: none !important; /* تجاوز أي max-width سابق */
+        height: auto !important;   /* اسمح لها بالتمدد حسب المحتوى */
+        min-height: 0 !important;  /* تجاوز أي min-height سابق */
+        margin: 0 !important;      /* إزالة أي هوامش خارجية */
+        padding: 0 !important;     /* إزالة أي حشوة خارجية */
+        box-shadow: none !important;/* إزالة أي ظلال */
+        border: none !important;    /* إزالة أي حدود */
+        position: static !important; /* مهم جدًا لإلغاء أي absolute/fixed قديم */
+        page-break-inside: avoid !important; /* محاولة تجنب كسر الفاتورة عبر الصفحات إذا أمكن */
+    }
+
+    /* --- إعدادات محتوى الفاتورة الداخلي للطباعة --- */
+    .invoice-content {
+        padding: 15mm !important; /* هوامش مناسبة للطباعة (مثل A4) */
+        width: auto !important;    /* اسمح لها بالتوسع داخل حاوية الـ PDF */
+        box-shadow: none !important;
+        border: none !important;
+        font-size: 9pt !important; /* ضمان حجم خط متناسق داخل الفاتورة */
+    }
+
+    /* --- استعادة التخطيطات التي قد تكون تغيرت للجوال --- */
+    .preview-header {
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        text-align: inherit !important;
+        border-bottom-width: 2px !important; /* ضمان سمك الخط السفلي */
+    }
+    .preview-header-left, .preview-header-right {
+        text-align: inherit !important; /* استعادة المحاذاة الافتراضية */
+    }
+    .preview-meta-info {
+        flex-direction: row !important;
+    }
+
+    .invoice-items-wrapper {
+        overflow-x: visible !important; /* مهم جدًا لإظهار كامل الجدول */
+        margin-bottom: 20px !important; /* مسافة مناسبة بعد الجدول */
+    }
+    .items-table-preview {
+        min-width: unset !important;
+        width: 100% !important;
+        font-size: 8.5pt !important; /* خط أصغر قليلًا للجدول */
+        page-break-inside: auto !important; /* اسمح للجدول بالانقسام إذا كان طويلاً جدًا */
+    }
+    .items-table-preview th, .items-table-preview td {
+        padding: 4px 6px !important; /* تقليل الحشوة لخلايا الجدول */
+        word-break: break-word; /* للسماح بكسر الكلمات الطويلة في الخلايا */
+    }
+
+    .preview-summary {
+        justify-content: flex-end !important;
+        page-break-inside: avoid !important; /* محاولة عدم كسر الملخص */
+    }
+    .preview-summary table {
+        width: 50% !important; /* عرض مناسب لجدول الملخص */
+    }
+
+    .preview-footer-notes {
+        page-break-before: auto !important; /* لا تبدأ صفحة جديدة إلا إذا لزم الأمر */
+    }
+    
+    /* ضمان طباعة ألوان الخلفية إذا اختار المستخدم ذلك من إعدادات المتصفح */
+    .items-table-preview th { background-color: var(--theme-color) !important; color: var(--text-color-light) !important; }
+    .items-table-preview tbody tr:nth-child(even) td { background-color: #f8f8f8 !important; }
+    .preview-summary .grand-total td { background-color: var(--theme-color-dark) !important; color: var(--text-color-light) !important; }
+
+    /* إخفاء أي شيء قد يكون له display: fixed ولا نريده في الطباعة */
+    [style*="position: fixed"], [style*="position: sticky"] {
+        display: none !important;
+    }
+}
     </style>
 </head>
 <body>
