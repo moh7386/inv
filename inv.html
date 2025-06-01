@@ -2,195 +2,138 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام فواتير احترافي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>نظام فواتير ARC تيك</title>
     <style>
         :root {
-            --primary-color: #006FA2;
-            --secondary-color: #155A56;
-            --light-gray: #f4f6f6;
-            --medium-gray: #e9ecef;
-            --dark-gray: #333333;
-            --border-color: #dce3e2;
-            --white: #ffffff;
-            --text-color: #4a4a4a;
+            --primary-color: #1A6D69; --secondary-color: #155A56; --light-gray: #f4f6f6;
+            --medium-gray: #e9ecef; --dark-gray: #333333; --border-color: #dce3e2;
+            --white: #ffffff; --text-color: #4a4a4a;
         }
+        body { font-family: 'Tahoma','Arial',sans-serif; margin:0; padding:10px; /* Reduced padding for mobile */ background-color:var(--medium-gray); color:var(--text-color); direction:rtl; font-size:14px; /* Base font for mobile */ -webkit-text-size-adjust: 100%; /* Prevent iOS font scaling */ }
+        .container { display:flex; flex-direction:column; gap:20px; max-width:900px; margin:auto; }
+        .invoice-form { background-color:var(--white); padding:15px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+        .invoice-form h2, .invoice-form h3 { color:var(--primary-color); border-bottom:1px solid var(--border-color); padding-bottom:8px; margin-top:0; margin-bottom:12px; }
+        .invoice-form h2 { font-size:1.3em; } /* Adjusted for mobile */
+        .invoice-form h3 { font-size:1.1em; margin-top:15px; } /* Adjusted for mobile */
+        .form-group { margin-bottom:10px; }
+        .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px 8px; border:1px solid var(--border-color); border-radius:4px; font-size:0.9em; box-sizing:border-box; background-color:#fdfdfd; }
+        .form-group textarea { min-height:60px; }
+        .form-group ::placeholder { color:#888; opacity:1; font-size:0.9em; }
+        .company-data-actions button, .saved-invoices-section button { padding:8px 10px; font-size:0.8em; margin-left:5px;}
+        .saved-invoices-section select { margin-bottom: 5px; }
 
-        body {
-            font-family: 'Tahoma', 'Arial', sans-serif;
-            margin: 0;
-            padding: 15px;
-            background-color: var(--medium-gray);
-            color: var(--text-color);
-            direction: rtl;
-            font-size: 15px;
-        }
+        .item-row { display:flex; flex-wrap: wrap; /* Allow wrapping on small screens */ gap:5px; margin-bottom:8px; align-items:center; }
+        .item-row input.item-desc { flex-basis: 100%; margin-bottom: 5px; /* Full width on its own line */ }
+        .item-row input.item-qty { width:60px !important; flex-grow:1; text-align:center; }
+        .item-row input.item-price { width:80px !important; flex-grow:1; text-align:center; }
+        .item-row button.remove-item-btn { padding:8px 10px; font-size:0.85em; flex-shrink: 0; /* Prevent shrinking */ }
+        #addItemBtn { padding:9px 12px; font-size:0.95em; display: block; width: 100%; margin-top:10px; }
 
-        .container {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            max-width: 900px;
-            margin: auto;
-        }
+        .invoice-preview-container { background-color:var(--white); box-shadow:0 3px 10px rgba(0,0,0,0.1); width:100%; max-width:794px; margin:0 auto; padding:0; border:1px solid #ccc; }
+        .invoice-preview { padding:20px 15px; /* Reduced padding for mobile */ }
+        .invoice-preview-header { display:flex; flex-direction: column-reverse; /* Stack company above invoice details on mobile */ align-items:center; /* Center align header items */ text-align:center; padding-bottom:15px; border-bottom:2px solid var(--primary-color); margin-bottom:15px; }
+        .header-left, .header-right { flex-basis:auto; width:100%; } /* Full width for stacked items */
+        .header-right { margin-bottom:15px; }
+        .header-right img#previewLogo { max-width:150px; max-height:75px; margin:0 auto 10px auto; display:block; } /* Adjusted logo size and centering */
+        .header-left h1 { font-size:1.8em; padding:8px 12px; margin-bottom:10px; display:block; }
+        .header-left .invoice-meta p { font-size:0.8em; }
+        .header-left .invoice-meta strong { display:inline-block; min-width:auto; margin-left:5px; }
+        .header-left .bill-to { margin-top:10px; font-size:0.85em;}
 
-        .invoice-form {
-            background-color: var(--white);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-        .invoice-form h2, .invoice-form h3 { color: var(--primary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 0; margin-bottom: 15px; }
-        .invoice-form h2 { font-size: 1.5em; }
-        .invoice-form h3 { font-size: 1.15em; margin-top: 20px; }
-        
-        .form-group { margin-bottom: 12px; }
-        /* Removed label styles */
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 10px; /* Increased padding slightly for better placeholder visibility */
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 0.95em; /* Slightly larger for placeholders */
-            box-sizing: border-box;
-            background-color: #fdfdfd;
-        }
-        .form-group textarea { min-height: 70px; }
-        .form-group ::placeholder { /* Style placeholders */
-            color: #888;
-            opacity: 1; /* Firefox */
-            font-size: 0.9em;
-        }
-
-        .company-data-actions button { background-color: var(--secondary-color); color: var(--white); border: none; padding: 8px 12px; font-size: 0.85em; border-radius: 4px; cursor: pointer; margin-left: 8px; transition: background-color 0.2s; }
-        .company-data-actions button:hover { background-color: var(--primary-color); }
-        .item-row { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
-        .item-row input.item-desc { flex-grow: 1; }
-        .item-row input.item-qty { width: 70px !important; flex-grow: 0; text-align: center;} /* Adjusted width */
-        .item-row input.item-price { width: 100px !important; flex-grow: 0; text-align: center;} /* Adjusted width */
-        .item-row button.remove-item-btn { padding: 10px 12px; background-color: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;}
-        #addItemBtn { background-color: var(--primary-color); color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top:8px; font-size: 1em;}
+        .invoice-items-wrapper { overflow-x:auto; margin-bottom: 15px;}
+        .items-table-visual { width:100%; min-width: 550px; /* Ensure table scrolls if content is wide */ border-collapse:collapse; font-size:0.8em; }
+        .items-table-visual th, .items-table-visual td { padding:6px 8px; }
+        /* ... (rest of table styles as before) ... */
+        .items-table-visual th.col-no, .items-table-visual td.col-no {width: 5%;}
+        .items-table-visual th.col-desc, .items-table-visual td.col-desc {width: auto; text-align: right;} /* auto for flexibility */
+        .items-table-visual th.col-price, .items-table-visual td.col-price {width: 20%;}
+        .items-table-visual th.col-qty, .items-table-visual td.col-qty {width: 15%;}
+        .items-table-visual th.col-total, .items-table-visual td.col-total {width: 20%;}
+        .items-table-visual tbody tr:nth-child(even) td { background-color:var(--light-gray); }
 
 
-        /* --- Invoice Preview Styles (NEW DESIGN) --- */
-        .invoice-preview-container {
-            background-color: var(--white);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 794px;
-            margin: 0 auto;
-            padding: 0;
-            border: 1px solid #ccc;
-        }
-        .invoice-preview { padding: 30px 35px; }
-        .invoice-preview-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 3px solid var(--primary-color); margin-bottom: 20px; }
-        .header-left { flex-basis: 50%; text-align: left; }
-        .header-left h1 { background-color: var(--primary-color); color: var(--white); font-size: 2.2em; font-weight: bold; padding: 10px 15px; margin: 0 0 15px 0; display: inline-block; }
-        .header-left .invoice-meta p { margin: 4px 0; font-size: 0.9em; color: var(--text-color); }
-        .header-left .invoice-meta strong { display: inline-block; min-width: 90px; font-weight: bold; color: var(--dark-gray); }
-        .header-left .bill-to { margin-top: 15px; font-size: 0.9em; }
-        .header-left .bill-to strong { display: block; margin-bottom: 3px; font-weight: bold; color: var(--dark-gray); }
-        .header-left .bill-to span { display: block; line-height: 1.4; }
-        .header-right { flex-basis: 45%; text-align: right; }
-        .header-right img#previewLogo { max-width: 200px; max-height: 100px; margin-bottom: 8px; display: block; margin-left: auto; }
-        .header-right #previewBrandName { font-size: 1.3em; font-weight: bold; color: var(--dark-gray); margin-bottom: 2px; }
-        .header-right #previewTagline { font-size: 0.9em; color: var(--text-color); margin-bottom: 10px; }
-        .header-right .payment-info-basic p { margin: 3px 0; font-size: 0.85em; }
-        .header-right .payment-info-basic strong { font-weight: bold; color: var(--dark-gray); }
-        .items-table-visual { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.9em; }
-        .items-table-visual th, .items-table-visual td { border: 1px solid var(--border-color); padding: 8px 10px; text-align: center; }
-        .items-table-visual th { background-color: var(--primary-color); color: var(--white); font-weight: bold; }
-        .items-table-visual th.col-no, .items-table-visual td.col-no { text-align: center; width: 5%; }
-        .items-table-visual th.col-desc, .items-table-visual td.col-desc { text-align: right; width: 45%;}
-        .items-table-visual th.col-price, .items-table-visual td.col-price { text-align: center; width: 15%;}
-        .items-table-visual th.col-qty, .items-table-visual td.col-qty { text-align: center; width: 10%;}
-        .items-table-visual th.col-total, .items-table-visual td.col-total { text-align: center; width: 15%;}
-        .items-table-visual tbody tr:nth-child(even) td { background-color: var(--light-gray); }
-        .invoice-summary-and-terms { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 0.9em; }
-        
-        .summary-section {
-            flex-basis: 45%;
-            text-align: left; /* This will make content align to the left in RTL */
-        }
-        .summary-section table { width: 100%; margin-bottom: 15px; }
-        .summary-section td { padding: 6px 0; }
-        .summary-section td:first-child { /* Labels: Sub Total, Tax, Grand Total */
-            text-align: left; /* Align label to the left */
-            padding-left: 10px; /* Padding on the left of the label */
-            color: var(--dark-gray);
-            width: 60%; /* Give more space to labels */
-        }
-        .summary-section td:last-child { /* Amounts */
-            text-align: left; /* Align amount to the left */
-            font-weight: bold;
-            padding-left: 5px; /* Padding on the left of the amount */
-            color: var(--dark-gray);
-        }
-        .summary-section .grand-total-row td {
-            background-color: var(--primary-color);
-            color: var(--white);
-            font-size: 1.1em;
-            padding: 8px 10px; /* Keep padding for Grand Total row */
-        }
-        .summary-section .signature-area { margin-top: 30px; border-top: 1px solid var(--dark-gray); padding-top: 8px; width: 60%; text-align: center; font-size: 0.9em; color: var(--dark-gray); }
-        .terms-section { flex-basis: 50%; text-align: right; padding-right: 20px; }
-        .terms-section h4 { margin: 0 0 5px 0; font-size: 0.95em; font-weight: bold; color: var(--dark-gray); }
-        .terms-section p { font-size: 0.85em; line-height: 1.5; color: var(--text-color); white-space: pre-wrap; }
-        .invoice-preview-footer { background-color: var(--primary-color); color: var(--white); padding: 10px 0; text-align: center; font-size: 0.8em; }
-        .invoice-preview-footer span { margin: 0 10px; }
-        .actions-buttons-container { background-color: var(--white); padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); text-align: center; margin-top: 20px; }
-        .actions-buttons-container button { background-color: var(--primary-color); color: white; border: none; padding: 10px 20px; text-align: center; font-size: 1em; margin: 5px; cursor: pointer; border-radius: 5px; transition: background-color 0.2s; }
-        .actions-buttons-container button:hover { background-color: var(--secondary-color); }
-        .actions-buttons-container button.pdf-btn { background-color: #c0392b; }
-        .actions-buttons-container button.pdf-btn:hover { background-color: #a52a21; }
+        .invoice-summary-and-terms { display:flex; flex-direction:column; /* Stack on mobile */ margin-bottom:15px; font-size:0.85em; }
+        .summary-section { width:100%; text-align:left; margin-bottom:15px; }
+        .summary-section table { width:100%; max-width: 320px; /* Limit width on mobile */ margin: 0 auto 10px auto; /* Center summary table */ }
+        .summary-section td:first-child { width: auto; padding-left: 5px; } /* Allow label to take needed space */
+        .summary-section td:last-child { padding-left: 5px; }
+        .summary-section .grand-total-row td { font-size:1em; padding:7px 8px; }
+        .summary-section .signature-area { margin-top:20px; width:70%; margin-left:auto; margin-right:auto; }
+        .terms-section { width:100%; text-align:center; padding-right:0; } /* Center terms on mobile */
+        .terms-section h4 { font-size:0.9em; }
+        .terms-section p { font-size:0.8em; }
 
-        @media (max-width: 768px) { /* ... (responsive styles remain largely the same, ensure summary-section text-align:left is maintained or adjusted if needed) ... */
-             body { padding: 10px; }
-            .invoice-preview { padding: 20px 15px; }
-            .invoice-preview-header { flex-direction: column-reverse; align-items: stretch; text-align:center; }
-            .header-left, .header-right { flex-basis: auto; width: 100%; text-align: center !important; }
-            .header-right { margin-bottom: 20px; }
-            .header-right img#previewLogo { margin: 0 auto 8px auto; }
-            .header-left h1 { display: block; margin-left: auto; margin-right: auto; }
-            .header-left .invoice-meta p, .header-left .bill-to { text-align: center !important; }
-            .header-left .invoice-meta strong { display: block; margin-bottom: 2px; min-width:unset; }
-            .invoice-items-wrapper { overflow-x: auto; }
-            .items-table-visual { min-width: 500px; }
-            .items-table-visual th, .items-table-visual td { font-size: 0.85em; padding: 6px; }
-            .items-table-visual th.col-desc, .items-table-visual td.col-desc { text-align: right; }
-            .invoice-summary-and-terms { flex-direction: column; }
-            .summary-section { flex-basis: auto; width: 100%; text-align: left; margin-bottom: 20px; } /* Ensure left align for mobile too */
-            .summary-section table { margin: 0 0 15px 0; width: 100%; max-width:350px; } /* Align table left for consistency */
-            .summary-section .signature-area { margin: 20px auto 0 auto; } /* Center signature */
-            .terms-section { flex-basis: auto; width: 100%; text-align: center; padding-right: 0; }
+        .invoice-preview-footer { padding:8px 0; font-size:0.75em; }
+        .invoice-preview-footer span { display:block; margin: 3px auto; text-align:center; } /* Stack footer items */
+
+        .actions-buttons-container { padding:10px; margin-top:15px; }
+        .actions-buttons-container button { padding:10px 15px; font-size:0.9em; display:block; width:100%; margin:8px 0; }
+
+
+        /* Larger screens - Tablet and Desktop */
+        @media (min-width: 768px) {
+            body { padding: 20px; font-size: 15px; }
+            .invoice-form { padding: 20px; }
+            .invoice-form h2 { font-size:1.5em; }
+            .invoice-form h3 { font-size:1.15em; }
+            .item-row input.item-desc { flex-basis:auto; margin-bottom: 0; } /* Reset for larger screens */
+            .item-row { flex-wrap: nowrap; }
+            #addItemBtn { display: inline-block; width: auto; }
+
+            .invoice-preview { padding:30px 35px; }
+            .invoice-preview-header { flex-direction:row; align-items:flex-start; text-align:inherit; }
+            .header-left { text-align:left; }
+            .header-right { text-align:right; }
+            .header-right img#previewLogo { max-width:200px; max-height:100px; margin-left:auto; margin-right:0; }
+            .header-left h1 { display:inline-block; }
+            .header-left .invoice-meta p, .header-left .bill-to { text-align:left; }
+            .header-left .invoice-meta strong { min-width:90px; }
+
+            .items-table-visual { min-width: auto; font-size:0.9em; }
+            .items-table-visual th, .items-table-visual td { padding:8px 10px; }
+
+            .invoice-summary-and-terms { flex-direction:row; font-size:0.9em; }
+            .summary-section { text-align:left; width:45%; }
+            .summary-section table { margin: 0 0 15px 0; max-width:none; }
+            .summary-section .signature-area { margin-left:0; }
+            .terms-section { text-align:right; width:50%; padding-right:20px; }
+            .terms-section h4, .terms-section p {text-align: right;}
+
+
+            .invoice-preview-footer span { display:inline-block; margin: 0 10px; }
+            .actions-buttons-container button { display:inline-block; width:auto; margin:5px; }
         }
 
-        @media print { /* ... (print styles remain largely the same) ... */
-            body { background-color: var(--white) !important; padding: 0; margin: 0; font-size: 9pt; -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
-            .container, .invoice-form, .actions-buttons-container { display: none !important; }
-            .invoice-preview-container { display: block !important; width: 100% !important; max-width: none !important; margin:0 !important; padding:0 !important; box-shadow: none !important; border: none !important;}
-            .invoice-preview { padding: 20mm 15mm !important; page-break-after: always; }
-            .invoice-preview-header { flex-direction: row !important; }
-            .invoice-summary-and-terms { flex-direction: row !important; }
-            .invoice-items-wrapper { overflow-x: visible !important; }
-            .items-table-visual { min-width: unset !important; }
+        @media print {
+            body { background-color:var(--white) !important; padding:0; margin:0; font-size:9pt; -webkit-print-color-adjust:exact !important; color-adjust:exact !important; }
+            .container, .invoice-form, .actions-buttons-container { display:none !important; }
+            .invoice-preview-container { display:block !important; width:100% !important; max-width:none !important; margin:0 !important; padding:0 !important; box-shadow:none !important; border:none !important; }
+            .invoice-preview { padding:15mm !important; /* A4-like margins */ page-break-after:always; }
+            .invoice-preview-header { flex-direction:row !important; align-items:flex-start !important; text-align:inherit !important; } /* Restore desktop header */
+            .invoice-items-wrapper { overflow-x:visible !important; }
+            .items-table-visual { min-width:unset !important; font-size: 8.5pt !important; } /* Adjust table font for print */
+            .items-table-visual th, .items-table-visual td { padding: 5px 7px !important; }
+            .invoice-summary-and-terms { flex-direction:row !important; } /* Restore desktop summary */
         }
     </style>
 </head>
 <body>
-
+    <!-- ... (نفس محتوى HTML من الإجابة السابقة) ... -->
     <div class="container">
-			<div class="invoice-form">
-    <h2>إعدادات الفاتورة</h2>
+        <div class="invoice-form">
+            <h2>إعدادات فاتورة ARC تيك</h2>
 
-    <div class="saved-invoices-section form-group">
-        <h3>الفواتير المحفوظة</h3>
-        <select id="savedInvoicesList" onchange="loadSelectedInvoice()">
-            <option value="">-- اختر فاتورة للتعديل --</option>
-        </select>
-        <button type="button" onclick="deleteSelectedInvoice()" style="background-color: #e74c3c; color: white; border: none; padding: 8px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">حذف المختارة</button>
-    </div>
-    <hr>
+            <div class="saved-invoices-section form-group">
+                <h3>الفواتير المحفوظة</h3>
+                <select id="savedInvoicesList" onchange="loadSelectedInvoice()">
+                    <option value="">-- اختر فاتورة للتعديل --</option>
+                </select>
+                <button type="button" class="delete-btn" onclick="deleteSelectedInvoice()">حذف المختارة</button>
+                <button type="button" onclick="clearInvoiceFormAndPreview()" style="margin-right: 5px;">فاتورة جديدة</button>
+            </div>
+            <hr>
+
             <div class="form-group">
                 <select id="currency" onchange="updateAllPreviews()">
                     <option value="USD" data-symbol="$" selected>دولار أمريكي ($)</option>
@@ -198,40 +141,38 @@
                     <option value="YER" data-symbol="ر.ي">ريال يمني (ر.ي)</option>
                 </select>
             </div>
-			 
 
             <h3>
                 معلومات شركتك
                 <span class="company-data-actions">
-                    <button type="button" onclick="saveCompanyData()">حفظ</button>
-                    <button type="button" onclick="loadCompanyData()">استرجاع</button>
+                    <button type="button" onclick="saveCompanyData()">حفظ بيانات الشركة</button>
+                    <button type="button" onclick="loadCompanyData()">استرجاع بيانات الشركة</button>
                 </span>
             </h3>
             <div class="form-group"><input type="file" id="companyLogo" accept="image/*" onchange="previewLogoImage(event)"></div>
-            <div class="form-group"><input type="text" id="brandName" placeholder="اسم الشركة" value="اسم شركتك" onkeyup="updatePreview('brandName', 'previewBrandName')"></div>
-            <div class="form-group"><input type="text" id="tagline" placeholder="وصف الشركة (اختياري)" value="خدمات وحلول مبتكرة" onkeyup="updatePreview('tagline', 'previewTagline')"></div>
-            <div class="form-group"><input type="text" id="companyPaymentInfo1" placeholder="معلومة دفع 1 (مثال: Account)" value="778" onkeyup="updatePreview('companyPaymentInfo1', 'previewCompanyPaymentInfo1')"></div>
-            <div class="form-group"><input type="text" id="companyPaymentInfo2" placeholder="معلومة دفع 2 (مثال: A/c Name)" value="اسم الحساب" onkeyup="updatePreview('companyPaymentInfo2', 'previewCompanyPaymentInfo2')"></div>
-            <div class="form-group"><input type="text" id="companyFooterText" placeholder="نص الفوتر (مثال: بريد، هاتف، موقع)" value="info@example.com | +123456789 | www.example.com" onkeyup="updatePreview('companyFooterText', 'previewCompanyFooterText')"></div>
+            <div class="form-group"><input type="text" id="brandName" placeholder="اسم الشركة" onkeyup="updatePreview('brandName', 'previewBrandName')"></div>
+            <div class="form-group"><input type="text" id="tagline" placeholder="وصف الشركة (اختياري)" onkeyup="updatePreview('tagline', 'previewTagline')"></div>
+            <div class="form-group"><input type="text" id="companyPaymentInfo1" placeholder="معلومة دفع 1 (مثال: Account)" onkeyup="updatePreview('companyPaymentInfo1', 'previewCompanyPaymentInfo1')"></div>
+            <div class="form-group"><input type="text" id="companyPaymentInfo2" placeholder="معلومة دفع 2 (مثال: A/c Name)" onkeyup="updatePreview('companyPaymentInfo2', 'previewCompanyPaymentInfo2')"></div>
+            <div class="form-group"><input type="text" id="companyFooterText" placeholder="نص الفوتر (مثال: بريد، هاتف، موقع)" onkeyup="updatePreview('companyFooterText', 'previewCompanyFooterText')"></div>
 
             <h3>تفاصيل الفاتورة</h3>
-            <div class="form-group"><input type="text" id="invoiceNumber" placeholder="رقم الفاتورة" value="INV-001" onkeyup="updatePreview('invoiceNumber', 'previewInvoiceNumber')"></div>
+            <div class="form-group"><input type="text" id="invoiceNumber" placeholder="رقم الفاتورة" onkeyup="updatePreview('invoiceNumber', 'previewInvoiceNumber')"></div>
             <div class="form-group"><input type="date" id="invoiceDate" placeholder="تاريخ الفاتورة" onchange="updatePreviewDate('invoiceDate', 'previewInvoiceDate')"></div>
             <div class="form-group"><input type="date" id="dueDate" placeholder="تاريخ الاستحقاق" onchange="updatePreviewDate('dueDate', 'previewDueDate')"></div>
-            <div class="form-group"><input type="text" id="accountNumber" placeholder="رقم حساب العميل (إن وجد)" value="8787" onkeyup="updatePreview('accountNumber', 'previewAccountNumber')"></div>
+            <div class="form-group"><input type="text" id="accountNumber" placeholder="رقم حساب العميل (إن وجد)" onkeyup="updatePreview('accountNumber', 'previewAccountNumber')"></div>
 
             <h3>فاتورة إلى (Bill To)</h3>
-            <div class="form-group"><input type="text" id="clientName" placeholder="اسم العميل/الشركة" value="اسم العميل" onkeyup="updatePreview('clientName', 'previewClientName')"></div>
-            <div class="form-group"><textarea id="clientAddress" placeholder="عنوان العميل" onkeyup="updatePreview('clientAddress', 'previewClientAddress', true)">123 شارع المثال، المدينة</textarea></div>
+            <div class="form-group"><input type="text" id="clientName" placeholder="اسم العميل/الشركة" onkeyup="updatePreview('clientName', 'previewClientName')"></div>
+            <div class="form-group"><textarea id="clientAddress" placeholder="عنوان العميل" onkeyup="updatePreview('clientAddress', 'previewClientAddress', true)"></textarea></div>
 
             <h3>بنود الفاتورة</h3>
             <div id="invoiceItemsContainer"></div>
             <button type="button" id="addItemBtn" onclick="addInvoiceItem()">إضافة بند +</button>
 
             <h3>الملخص</h3>
-<div class="form-group">
-    <input type="number" id="discountRate" placeholder="نسبة الخصم (%)" value="0" min="0" max="100" step="0.01" oninput="calculateTotals()">
-</div>
+            <div class="form-group"><input type="number" id="discountRate" placeholder="نسبة الخصم (%)" value="0" min="0" max="100" step="0.01" oninput="calculateTotals()"></div>
+
             <h3>نصوص إضافية</h3>
             <div class="form-group"><textarea id="termsConditions" placeholder="الشروط والأحكام" onkeyup="updatePreview('termsConditions', 'previewTermsConditions', true)">شكراً لتعاملكم معنا.</textarea></div>
         </div>
@@ -240,79 +181,56 @@
             <div class="invoice-preview" id="invoiceToPrint">
                 <header class="invoice-preview-header">
                     <div class="header-left">
-                        <h1>فاتورة</h1>
+                        <h1>INVOICE</h1>
                         <div class="invoice-meta">
-                            <p><strong>رقم الفاتورة:</strong> <span id="previewInvoiceNumber">INV-001</span></p>
-                            <p><strong>التاريخ:</strong> <span id="previewInvoiceDate">01/06/2025</span></p>
-                            <p><strong>تاريخ الدفع:</strong> <span id="previewDueDate">01/06/2025</span></p>
-                            <p><strong>رقم الحساب:</strong> <span id="previewAccountNumber">8787</span></p>
+                            <p><strong>Invoice No:</strong> <span id="previewInvoiceNumber"></span></p>
+                            <p><strong>Date:</strong> <span id="previewInvoiceDate"></span></p>
+                            <p><strong>Due Date:</strong> <span id="previewDueDate"></span></p>
+                            <p><strong>Account No:</strong> <span id="previewAccountNumber"></span></p>
                         </div>
                         <div class="bill-to">
-                            <strong>فاتورة لـ.</strong>
-                            <span id="previewClientName">اسم العميل</span>
-                            <span id="previewClientAddress">123 شارع المثال، المدينة</span>
+                            <strong>BILL TO.</strong>
+                            <span id="previewClientName"></span>
+                            <span id="previewClientAddress"></span>
                         </div>
                     </div>
                     <div class="header-right">
-                        <img src="https://via.placeholder.com/130x60.png?text=LOGO" alt="شعار الشركة" id="previewLogo">
-                        <div id="previewBrandName">اسم شركتك</div>
-                        <div id="previewTagline">خدمات وحلول مبتكرة</div>
+                        <img src="https://via.placeholder.com/200x100.png?text=ARC+Tech+Logo" alt="شعار الشركة" id="previewLogo">
+                        <div id="previewBrandName">ARC تيك</div>
+                        <div id="previewTagline">حلول تقنية متكاملة</div>
                         <div class="payment-info-basic">
-                            <p><strong>رقم الحساب</strong> <span id="previewCompanyPaymentInfo1">778</span></p>
-                            <p><strong>اسم الحساب:</strong> <span id="previewCompanyPaymentInfo2">اسم الحساب</span></p>
+                            <p><strong>Account:</strong> <span id="previewCompanyPaymentInfo1"></span></p>
+                            <p><strong>A/c Name:</strong> <span id="previewCompanyPaymentInfo2"></span></p>
                         </div>
                     </div>
                 </header>
-
                 <div class="invoice-items-wrapper">
                     <table class="items-table-visual">
                         <thead>
-                            <tr>
-                                <th class="col-no">رقم</th>
-                                <th class="col-desc">الوصف</th>
-                                <th class="col-price">سعر الوحدة</th>
-                                <th class="col-qty">الكمية</th>
-                                <th class="col-total">المجموع</th>
-                            </tr>
+                            <tr><th class="col-no">NO</th><th class="col-desc">PRODUCT DESCRIPTION</th><th class="col-price">UNIT PRICE</th><th class="col-qty">QTY</th><th class="col-total">TOTAL</th></tr>
                         </thead>
                         <tbody id="previewItemsTableBody"></tbody>
                     </table>
                 </div>
-
                 <section class="invoice-summary-and-terms">
                     <div class="summary-section">
                         <table>
-                            <tr>
-                                <td>المجموع الفرعي</td>
-                                <td><span id="previewSubtotal">$ 0.00</span></td>
-                            </tr>
-                            <tr id="previewDiscountRow" style="display:none;"> <!-- غيرنا id الصف -->
-    <td>الخصم (<span id="previewDiscountRate">0</span>%)</td> <!-- غيرنا النص و id للـ span -->
-    <td><span id="previewDiscountAmount">$ 0.00</span></td> <!-- غيرنا id للـ span -->
-</tr>
-                            <tr class="grand-total-row">
-                                <td>الإجمالي الكلي</td>
-                                <td><span id="previewGrandTotal">$ 0.00</span></td>
-                            </tr>
+                            <tr><td>المجموع الفرعي</td><td><span id="previewSubtotal"></span></td></tr>
+                            <tr id="previewDiscountRow" style="display:none;"><td>الخصم (<span id="previewDiscountRate">0</span>%)</td><td><span id="previewDiscountAmount"></span></td></tr>
+                            <tr class="grand-total-row"><td>الإجمالي الكلي</td><td><span id="previewGrandTotal"></span></td></tr>
                         </table>
-                        <div class="signature-area">
-                            التوقيع
-                        </div>
+                        <div class="signature-area">التوقيع</div>
                     </div>
                     <div class="terms-section">
                         <h4>الشروط والأحكام</h4>
-                        <p id="previewTermsConditions">شكراً لتعاملكم معنا.</p>
+                        <p id="previewTermsConditions"></p>
                     </div>
                 </section>
-
-                <footer class="invoice-preview-footer">
-                    <span id="previewCompanyFooterText">info@example.com | +123456789 | www.example.com</span>
-                </footer>
+                <footer class="invoice-preview-footer"><span id="previewCompanyFooterText"></span></footer>
             </div>
         </div>
-
         <div class="actions-buttons-container">
-		    <button onclick="saveCurrentInvoice()">حفظ الفاتورة</button> <!-- زر جديد -->
+            <button onclick="saveCurrentInvoice()">حفظ/تحديث الفاتورة</button>
             <button onclick="window.print()">طباعة الفاتورة</button>
             <button class="pdf-btn" onclick="downloadPDF()">تنزيل كـ PDF</button>
         </div>
@@ -321,267 +239,779 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
-        // --- JavaScript ---
-                // --- دالة downloadPDF المعدلة ---
-        function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const invoiceElement = document.getElementById('invoiceToPrint');
-            if (!invoiceElement) return;
-
-            // --- إعدادات التحسين ---
-            const imageScale = 1.5; // جرب قيم مثل 1.2, 1.5, 2.0. كلما قل الرقم، صغر حجم الملف وقلت الدقة.
-            const useJPEG = false;   // اضبطها إلى true لتجربة JPEG، أو false لاستخدام PNG (جودة أعلى، حجم أكبر)
-            const jpegQuality = 0.75; // جودة JPEG (من 0.0 إلى 1.0)، تُستخدم فقط إذا كان useJPEG = true
-            // إخفاء العناصر غير المرغوب فيها مؤقتًا
-            const form = document.querySelector('.invoice-form');
-            const actions = document.querySelector('.actions-buttons-container');
-            const originalFormDisplay = form ? form.style.display : '';
-            const originalActionsDisplay = actions ? actions.style.display : '';
-
-            if (form) form.style.display = 'none';
-            if (actions) actions.style.display = 'none';
-
-            console.log(`Generating PDF with scale: ${imageScale}, format: ${useJPEG ? 'JPEG' : 'PNG'}`);
-
-            html2canvas(invoiceElement, {
-                scale: imageScale,
-                useCORS: true,
-                logging: false, // لتقليل المخرجات في الكونسول
-                width: invoiceElement.offsetWidth,
-                height: invoiceElement.offsetHeight,
-                windowWidth: invoiceElement.scrollWidth, // لضمان التقاط المحتوى الكامل إذا كان هناك تمرير داخلي
-                windowHeight: invoiceElement.scrollHeight
-            }).then(canvas => {
-                let imgData, imgType;
-                if (useJPEG) {
-                    imgData = canvas.toDataURL('image/jpeg', jpegQuality);
-                    imgType = 'JPEG';
-                } else {
-                    imgData = canvas.toDataURL('image/png', 1.0); // PNG جودة كاملة
-                    imgType = 'PNG';
-                }
-
-                const pdf = new jsPDF({
-                    orientation: 'p', // عمودي
-                    unit: 'pt',       // وحدة النقاط
-                    format: 'a4'      // حجم A4
-                });
-
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                const canvasAspectRatio = canvas.width / canvas.height;
-
-                let imgWidth = pdfWidth;
-                let imgHeight = pdfWidth / canvasAspectRatio;
-
-                // إذا كان الارتفاع المحسوب أكبر من ارتفاع الصفحة، اضبط الارتفاع وقلل العرض
-                if (imgHeight > pdfHeight) {
-                    imgHeight = pdfHeight;
-                    imgWidth = pdfHeight * canvasAspectRatio;
-                }
-
-                const x = (pdfWidth - imgWidth) / 2; // توسيط الصورة
-                const y = 0;                         // البدء من الأعلى
-
-                pdf.addImage(imgData, imgType, x, y, imgWidth, imgHeight);
-
-                const invoiceNumEl = document.getElementById('previewInvoiceNumber');
-                const invoiceNum = invoiceNumEl ? invoiceNumEl.textContent.trim().replace(/[^\w\s-]/gi, '').replace(/\s+/g, '_') : 'invoice';
-                pdf.save(`${invoiceNum}.pdf`);
-
-                // إعادة إظهار العناصر
-                if (form) form.style.display = originalFormDisplay;
-                if (actions) actions.style.display = originalActionsDisplay;
-
-            }).catch(error => {
-                console.error("خطأ أثناء إنشاء PDF:", error);
-                // إعادة إظهار العناصر في حال حدوث خطأ
-                if (form) form.style.display = originalFormDisplay;
-                if (actions) actions.style.display = originalActionsDisplay;
-            });
-        }
-
-        // --- بقية دوال JavaScript لديك (getCurrentDate, addInvoiceItem, calculateTotals, etc.) تبقى كما هي ---
-        // ...
-        // ... (ضع هنا بقية دوال JavaScript التي كانت موجودة لديك)
-        // ...
-        // (مثال: getCurrentDate, getCurrentDisplayDate, updatePreview, updatePreviewDate, previewLogoImage, addInvoiceItem, removeInvoiceItem, formatCurrency, calculateTotals, updateAllPreviews, saveCompanyData, loadCompanyData)
-        // --- تأكد من أن جميع الدوال الأخرى موجودة هنا ---
-
-        // --- للتوضيح، سأضيف دالة بسيطة لتمثيل الدوال الأخرى ---
+        // --- JavaScript (نفس الكود من الإجابة السابقة) ---
+        // ... (انسخ والصق كامل كود JavaScript من الإجابة السابقة هنا) ...
+        // يتضمن: itemCounter, currentCurrencySymbol, companyDataKey, savedInvoicesKey, companyFields
+        // والدوال: el, getCurrentDate, getCurrentDisplayDate, updatePreview, updatePreviewDate,
+        // previewLogoImage, addInvoiceItem, removeInvoiceItem, formatCurrency, calculateTotals,
+        // updateAllPreviews, saveCompanyData, loadCompanyData, saveCurrentInvoice,
+        // populateSavedInvoicesList, loadSelectedInvoice, deleteSelectedInvoice,
+        // clearInvoiceFormAndPreview, downloadPDF (المعدلة), و event listener لـ DOMContentLoaded
         let itemCounter = 0;
         let currentCurrencySymbol = '$';
-        const companyDataKey = 'invoiceSimpleCompanyData_v2';
-        const companyFieldsNew = ['brandName', 'tagline', 'companyPaymentInfo1', 'companyPaymentInfo2', 'companyFooterText'];
-const savedInvoicesKey = 'mySavedInvoicesList';
-        function getCurrentDate() { const now = new Date(); const year = now.getFullYear(); const month = String(now.getMonth() + 1).padStart(2, '0'); const day = String(now.getDate()).padStart(2, '0'); return `${year}-${month}-${day}`; }
-        function getCurrentDisplayDate() { const now = new Date(); const year = now.getFullYear(); const month = String(now.getMonth() + 1).padStart(2, '0'); const day = String(now.getDate()).padStart(2, '0'); return `${day}/${month}/${year}`; }
-        function updatePreview(inputId, previewId, isTextarea = false) { const el = document.getElementById(inputId); const pEl = document.getElementById(previewId); if(el&&pEl) pEl[isTextarea?'innerText':'textContent'] = el.value; }
-        function updatePreviewDate(inputId, previewId) { const el = document.getElementById(inputId); const pEl = document.getElementById(previewId); if(el&&pEl){ const dV = el.value; if(dV){const [y,m,d]=dV.split('-'); pEl.textContent = `${d}/${m}/${y}`;}else{pEl.textContent=(inputId==='invoiceDate')?getCurrentDisplayDate():'';}}}
-        function previewLogoImage(event) { const r=new FileReader(); const o=document.getElementById('previewLogo'); if(!o)return; r.onload=function(){o.src=r.result;}; if(event.target.files[0]){r.readAsDataURL(event.target.files[0]);}else{o.src='https://via.placeholder.com/130x60.png?text=LOGO';}}
-        function addInvoiceItem(description = '', quantity = 1, unitPrice = 0.00) {
+        const companyDataKey = 'arcTechCompanyData_v1';
+        const savedInvoicesKey = 'arcTechSavedInvoices_v1';
+        const companyFields = ['brandName', 'tagline', 'companyPaymentInfo1', 'companyPaymentInfo2', 'companyFooterText'];
+
+        function el(id) { return document.getElementById(id); }
+
+        function getCurrentDate() { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
+        function getCurrentDisplayDate() { const n = new Date(); return `${String(n.getDate()).padStart(2,'0')}/${String(n.getMonth()+1).padStart(2,'0')}/${n.getFullYear()}`; }
+
+        function updatePreview(inputId, previewId, isTextarea = false) {
+            const input = el(inputId); const preview = el(previewId);
+            if (input && preview) preview[isTextarea ? 'innerText' : 'textContent'] = input.value;
+        }
+
+        function updatePreviewDate(inputId, previewId) {
+            const input = el(inputId); const preview = el(previewId);
+            if (input && preview) {
+                const dateVal = input.value;
+                if (dateVal) { const [y,m,d] = dateVal.split('-'); preview.textContent = `${d}/${m}/${y}`; }
+                else { preview.textContent = (inputId === 'invoiceDate') ? getCurrentDisplayDate() : ''; }
+            }
+        }
+
+        function previewLogoImage(event) {
+            const reader = new FileReader(); const output = el('previewLogo'); if (!output) return;
+            reader.onload = function(){ output.src = reader.result; };
+            if (event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+            else output.src = 'https://via.placeholder.com/200x100.png?text=ARC+Tech+Logo';
+        }
+
+        function addInvoiceItem(description = '', quantity = 1, price = 0.00) {
             itemCounter++;
-            const itemsContainer = document.getElementById('invoiceItemsContainer');
-            if(!itemsContainer) return;
-            const itemRow = document.createElement('div');
-            itemRow.classList.add('item-row');
-            itemRow.id = `item-row-${itemCounter}`;
-            itemRow.innerHTML = `
-                <input type="text" class="item-desc" placeholder="وصف البند" value="${description}" onkeyup="calculateTotals()">
+            const container = el('invoiceItemsContainer'); if (!container) return;
+            const row = document.createElement('div'); row.className = 'item-row'; row.id = `item-row-${itemCounter}`;
+            row.innerHTML = `
+                <input type="text" class="item-desc" placeholder="وصف البند" value="${description}" oninput="calculateTotals()">
                 <input type="number" class="item-qty" value="${quantity}" min="0" placeholder="الكمية" oninput="calculateTotals()">
-                <input type="number" class="item-price" value="${parseFloat(unitPrice).toFixed(2)}" step="0.01" placeholder="السعر" oninput="calculateTotals()">
-                <button type="button" class="remove-item-btn" onclick="removeInvoiceItem('item-row-${itemCounter}')">X</button>
-            `;
-            itemsContainer.appendChild(itemRow);
+                <input type="number" class="item-price" value="${parseFloat(price).toFixed(2)}" step="0.01" placeholder="السعر" oninput="calculateTotals()">
+                <button type="button" class="remove-item-btn" onclick="removeInvoiceItem('item-row-${itemCounter}')">X</button>`;
+            container.appendChild(row);
             calculateTotals();
         }
-        function removeInvoiceItem(rowId) { const iR = document.getElementById(rowId); if(iR)iR.remove(); calculateTotals(); }
+
+        function removeInvoiceItem(rowId) { const row = el(rowId); if (row) row.remove(); calculateTotals(); }
         function formatCurrency(amount) { return `${currentCurrencySymbol} ${parseFloat(amount).toFixed(2)}`; }
+
         function calculateTotals() {
-            const iC = document.getElementById('invoiceItemsContainer'); const pTB = document.getElementById('previewItemsTableBody'); if(!iC||!pTB)return; pTB.innerHTML=''; let subtotal=0; let iN=0;
-            Array.from(iC.children).forEach(r=>{if(!r.classList.contains('item-row'))return; iN++; const dI=r.querySelector('.item-desc'); const qI=r.querySelector('.item-qty'); const pI=r.querySelector('.item-price'); if(!dI||!qI||!pI)return; const d=dI.value; const q=parseFloat(qI.value)||0; const uP=parseFloat(pI.value)||0; const total=q*uP; subtotal+=total; const pR=pTB.insertRow(); pR.insertCell().outerHTML=`<td class="col-no">${String(iN).padStart(2,'0')}</td>`; pR.insertCell().outerHTML=`<td class="col-desc">${d}</td>`; pR.insertCell().outerHTML=`<td class="col-price">${formatCurrency(uP)}</td>`; pR.insertCell().outerHTML=`<td class="col-qty">${q}</td>`; pR.insertCell().outerHTML=`<td class="col-total">${formatCurrency(total)}</td>`;});
-            const discountRateInput = document.getElementById('discountRate'); // Changed from taxRate
-            const discountRatePercent = discountRateInput ? parseFloat(discountRateInput.value) || 0 : 0;
-            const discountAmount = (subtotal * discountRatePercent) / 100;
-            const grandTotal = subtotal - discountAmount; // Subtract discount
-            const el=(id)=>document.getElementById(id);
-            if(el('previewSubtotal'))el('previewSubtotal').textContent=formatCurrency(subtotal);
-            if(el('previewDiscountRate'))el('previewDiscountRate').textContent=discountRatePercent; // Changed ID
-            if(el('previewDiscountAmount'))el('previewDiscountAmount').textContent=formatCurrency(discountAmount); // Changed ID
-            if(el('previewGrandTotal'))el('previewGrandTotal').textContent=formatCurrency(grandTotal);
-            const discountRow=el('previewDiscountRow'); // Changed ID
-            if(discountRow)discountRow.style.display=discountRatePercent>0?'table-row':'none';
+            const itemsCont = el('invoiceItemsContainer'); const tableBody = el('previewItemsTableBody');
+            if (!itemsCont || !tableBody) return;
+            tableBody.innerHTML = ''; let subtotal = 0; let num = 0;
+
+            Array.from(itemsCont.children).forEach(r => {
+                if (!r.classList.contains('item-row')) return; num++;
+                const desc = r.querySelector('.item-desc').value;
+                const qty = parseFloat(r.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(r.querySelector('.item-price').value) || 0;
+                const total = qty * price; subtotal += total;
+                const pR = tableBody.insertRow();
+                pR.insertCell().outerHTML=`<td class="col-no">${String(num).padStart(2,'0')}</td>`;
+                pR.insertCell().outerHTML=`<td class="col-desc">${desc}</td>`;
+                pR.insertCell().outerHTML=`<td class="col-price">${formatCurrency(price)}</td>`;
+                pR.insertCell().outerHTML=`<td class="col-qty">${qty}</td>`;
+                pR.insertCell().outerHTML=`<td class="col-total">${formatCurrency(total)}</td>`;
+            });
+
+            const discInput = el('discountRate'); const discPerc = discInput ? parseFloat(discInput.value) || 0 : 0;
+            const discAmount = (subtotal * discPerc) / 100;
+            const grandTotal = subtotal - discAmount;
+
+            if(el('previewSubtotal')) el('previewSubtotal').textContent = formatCurrency(subtotal);
+            if(el('previewDiscountRate')) el('previewDiscountRate').textContent = discPerc;
+            if(el('previewDiscountAmount')) el('previewDiscountAmount').textContent = formatCurrency(discAmount);
+            if(el('previewGrandTotal')) el('previewGrandTotal').textContent = formatCurrency(grandTotal);
+            const discRow = el('previewDiscountRow'); if(discRow) discRow.style.display = discPerc > 0 ? 'table-row' : 'none';
         }
-        function updateAllPreviews() { const cS=document.getElementById('currency'); if(cS)currentCurrencySymbol=cS.options[cS.selectedIndex].dataset.symbol; updatePreview('brandName','previewBrandName'); updatePreview('tagline','previewTagline'); updatePreview('companyPaymentInfo1','previewCompanyPaymentInfo1'); updatePreview('companyPaymentInfo2','previewCompanyPaymentInfo2'); updatePreview('companyFooterText','previewCompanyFooterText'); updatePreview('invoiceNumber','previewInvoiceNumber'); updatePreviewDate('invoiceDate','previewInvoiceDate'); updatePreviewDate('dueDate','previewDueDate'); updatePreview('accountNumber','previewAccountNumber'); updatePreview('clientName','previewClientName'); updatePreview('clientAddress','previewClientAddress',true); updatePreview('termsConditions','previewTermsConditions',true); calculateTotals(); }
-        function saveCompanyData() { const d={}; companyFieldsNew.forEach(id=>{const e=document.getElementById(id); if(e)d[id]=e.value;}); const lI=document.getElementById('previewLogo'); if(lI&&lI.src&&!lI.src.startsWith('https://via.placeholder.com')){d.companyLogoSrc=lI.src;}else{d.companyLogoSrc='';} localStorage.setItem(companyDataKey,JSON.stringify(d)); alert('تم حفظ بيانات الشركة!'); }
-        function loadCompanyData() { const sD=localStorage.getItem(companyDataKey); if(sD){const d=JSON.parse(sD); companyFieldsNew.forEach(id=>{const e=document.getElementById(id); if(e&&d[id]!==undefined)e.value=d[id];}); const lI=document.getElementById('previewLogo'); if(lI&&d.companyLogoSrc)lI.src=d.companyLogoSrc; else if(lI)lI.src='https://via.placeholder.com/130x60.png?text=LOGO'; updateAllPreviews();}}
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const invoiceDateInput = document.getElementById('invoiceDate');
-            const dueDateInput = document.getElementById('dueDate');
-            if(invoiceDateInput) invoiceDateInput.value = getCurrentDate();
-            if(dueDateInput) dueDateInput.value = getCurrentDate();
+        function updateAllPreviews() {
+            const currSelect = el('currency'); if (currSelect) currentCurrencySymbol = currSelect.options[currSelect.selectedIndex].dataset.symbol;
+            companyFields.forEach(id => updatePreview(id, `preview${id.charAt(0).toUpperCase() + id.slice(1)}`));
+            updatePreview('invoiceNumber', 'previewInvoiceNumber'); updatePreviewDate('invoiceDate', 'previewInvoiceDate');
+            updatePreviewDate('dueDate', 'previewDueDate'); updatePreview('accountNumber', 'previewAccountNumber');
+            updatePreview('clientName', 'previewClientName'); updatePreview('clientAddress', 'previewClientAddress', true);
+            updatePreview('termsConditions', 'previewTermsConditions', true);
+            calculateTotals();
+        }
 
-            if(!document.getElementById('invoiceItemsContainer').children.length){
-                 addInvoiceItem('', 1, 0.00);
+        function saveCompanyData() {
+            const data = {}; companyFields.forEach(id => { const input = el(id); if (input) data[id] = input.value; });
+            const logo = el('previewLogo');
+            if (logo && logo.src && !logo.src.includes('via.placeholder.com')) data.companyLogoSrc = logo.src; else data.companyLogoSrc = '';
+            localStorage.setItem(companyDataKey, JSON.stringify(data)); alert('تم حفظ بيانات الشركة!');
+        }
+
+        function loadCompanyData() {
+            const saved = localStorage.getItem(companyDataKey);
+            if (saved) {
+                const data = JSON.parse(saved);
+                companyFields.forEach(id => { const input = el(id); if (input && data[id] !== undefined) input.value = data[id]; });
+                const logo = el('previewLogo');
+                if (logo && data.companyLogoSrc) logo.src = data.companyLogoSrc;
+                else if (logo) logo.src = 'https://via.placeholder.com/200x100.png?text=ARC+Tech+Logo';
             }
-            loadCompanyData();
-            updateAllPreviews();
-			populateSavedInvoicesList();
-        });
-		function saveCurrentInvoice() {
-    const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
-    if (!invoiceNumber) {
-        alert('يرجى إدخال رقم الفاتورة قبل الحفظ.');
-        return;
-    }
+        }
 
-    const invoiceData = {
-        invoiceNumber: invoiceNumber,
-        invoiceDate: document.getElementById('invoiceDate').value,
-        dueDate: document.getElementById('dueDate').value,
-        accountNumber: document.getElementById('accountNumber').value,
-        clientName: document.getElementById('clientName').value,
-        clientAddress: document.getElementById('clientAddress').value,
-        discountRate: document.getElementById('discountRate').value,
-        termsConditions: document.getElementById('termsConditions').value,
-        // ... (اجمع بقية معلومات الشركة إذا أردت ربطها بالفاتورة بدلاً من الاعتماد على الحفظ العام)
-        // ... (مثل brandName, tagline, companyPaymentInfo1, etc.)
-        items: []
-    };
+        function saveCurrentInvoice() {
+            const invNum = el('invoiceNumber').value.trim(); if (!invNum) { alert('يرجى إدخال رقم الفاتورة.'); return; }
+            const invData = {
+                invoiceNumber: invNum, invoiceDate: el('invoiceDate').value, dueDate: el('dueDate').value,
+                accountNumber: el('accountNumber').value, clientName: el('clientName').value, clientAddress: el('clientAddress').value,
+                discountRate: el('discountRate').value, termsConditions: el('termsConditions').value,
+                companyDetails: {}, items: []
+            };
+            companyFields.forEach(id => { const input = el(id); if (input) invData.companyDetails[id] = input.value; });
+            const logo = el('previewLogo');
+            if (logo && logo.src && !logo.src.includes('via.placeholder.com')) invData.companyDetails.companyLogoSrc = logo.src;
+            else invData.companyDetails.companyLogoSrc = '';
 
-    // جمع بنود الفاتورة
-    const itemsContainer = document.getElementById('invoiceItemsContainer');
-    Array.from(itemsContainer.children).forEach(row => {
-        if (row.classList.contains('item-row')) {
-            invoiceData.items.push({
-                description: row.querySelector('.item-desc').value,
-                quantity: row.querySelector('.item-qty').value,
-                price: row.querySelector('.item-price').value
+            const itemsCont = el('invoiceItemsContainer');
+            Array.from(itemsCont.children).forEach(r => {
+                if (r.classList.contains('item-row')) {
+                    invData.items.push({
+                        description: r.querySelector('.item-desc').value,
+                        quantity: r.querySelector('.item-qty').value,
+                        price: r.querySelector('.item-price').value
+                    });
+                }
+            });
+
+            let invoices = JSON.parse(localStorage.getItem(savedInvoicesKey)) || [];
+            const idx = invoices.findIndex(i => i.invoiceNumber === invNum);
+            if (idx > -1) invoices[idx] = invData; else invoices.push(invData);
+            localStorage.setItem(savedInvoicesKey, JSON.stringify(invoices));
+            alert(idx > -1 ? 'تم تحديث الفاتورة!' : 'تم حفظ الفاتورة!');
+            populateSavedInvoicesList();
+        }
+
+        function populateSavedInvoicesList() {
+            const select = el('savedInvoicesList'); select.innerHTML = '<option value="">-- اختر فاتورة للتعديل --</option>';
+            const invoices = JSON.parse(localStorage.getItem(savedInvoicesKey)) || [];
+            invoices.sort((a, b) => (a.invoiceNumber > b.invoiceNumber) ? 1 : -1);
+            invoices.forEach(inv => {
+                const opt = document.createElement('option');
+                opt.value = inv.invoiceNumber;
+                opt.textContent = `فاتورة: ${inv.invoiceNumber} (عميل: ${inv.clientName || 'N/A'})`;
+                select.appendChild(opt);
             });
         }
-    });
 
-    let savedInvoices = JSON.parse(localStorage.getItem(savedInvoicesKey)) || [];
-    
-    // التحقق مما إذا كانت الفاتورة موجودة لتحديثها، أو إضافة جديدة
-    const existingInvoiceIndex = savedInvoices.findIndex(inv => inv.invoiceNumber === invoiceNumber);
-    if (existingInvoiceIndex > -1) {
-        savedInvoices[existingInvoiceIndex] = invoiceData; // تحديث الفاتورة الحالية
-        alert('تم تحديث الفاتورة بنجاح!');
-    } else {
-        savedInvoices.push(invoiceData); // إضافة فاتورة جديدة
-        alert('تم حفظ الفاتورة بنجاح!');
-    }
+        function loadSelectedInvoice() {
+            const select = el('savedInvoicesList'); const invNum = select.value;
+            if (!invNum) { clearInvoiceFormAndPreview(false); return; }
+            const invoices = JSON.parse(localStorage.getItem(savedInvoicesKey)) || [];
+            const invToLoad = invoices.find(i => i.invoiceNumber === invNum);
+            if (invToLoad) {
+                if (invToLoad.companyDetails) {
+                    companyFields.forEach(id => { const input = el(id); if (input && invToLoad.companyDetails[id] !== undefined) input.value = invToLoad.companyDetails[id]; });
+                    const logo = el('previewLogo');
+                    if (logo && invToLoad.companyDetails.companyLogoSrc) logo.src = invToLoad.companyDetails.companyLogoSrc;
+                    else if (logo) logo.src = 'https://via.placeholder.com/200x100.png?text=ARC+Tech+Logo';
+                }
 
-    localStorage.setItem(savedInvoicesKey, JSON.stringify(savedInvoices));
-    populateSavedInvoicesList(); // تحديث القائمة المنسدلة
-}
-function populateSavedInvoicesList() {
-    const selectElement = document.getElementById('savedInvoicesList');
-    selectElement.innerHTML = '<option value="">-- اختر فاتورة للتعديل --</option>'; // إعادة تعيين الخيارات
+                el('invoiceNumber').value = invToLoad.invoiceNumber; el('invoiceDate').value = invToLoad.invoiceDate;
+                el('dueDate').value = invToLoad.dueDate; el('accountNumber').value = invToLoad.accountNumber;
+                el('clientName').value = invToLoad.clientName; el('clientAddress').value = invToLoad.clientAddress;
+                el('discountRate').value = invToLoad.discountRate; el('termsConditions').value = invToLoad.termsConditions;
 
-    const savedInvoices = JSON.parse(localStorage.getItem(savedInvoicesKey)) || [];
-    savedInvoices.forEach(invoice => {
-        const option = document.createElement('option');
-        option.value = invoice.invoiceNumber;
-        option.textContent = `فاتورة رقم: ${invoice.invoiceNumber} (العميل: ${invoice.clientName || 'غير محدد'})`;
-        selectElement.appendChild(option);
-    });
-}
-function loadSelectedInvoice() {
-    const selectElement = document.getElementById('savedInvoicesList');
-    const selectedInvoiceNumber = selectElement.value;
-    if (!selectedInvoiceNumber) {
-        // يمكن إعادة تعيين النموذج هنا إذا أردت عند اختيار "-- اختر فاتورة --"
-        // clearInvoiceForm(); // ستحتاج لإنشاء هذه الدالة
-        return;
-    }
+                const itemsCont = el('invoiceItemsContainer'); itemsCont.innerHTML = ''; itemCounter = 0;
+                invToLoad.items.forEach(item => addInvoiceItem(item.description, item.quantity, item.price));
+                updateAllPreviews();
+                alert(`تم تحميل الفاتورة رقم: ${invNum}`);
+            }
+        }
 
-    const savedInvoices = JSON.parse(localStorage.getItem(savedInvoicesKey)) || [];
-    const invoiceToLoad = savedInvoices.find(inv => inv.invoiceNumber === selectedInvoiceNumber);
+        function deleteSelectedInvoice() {
+            const select = el('savedInvoicesList'); const invNum = select.value;
+            if (!invNum) { alert('يرجى اختيار فاتورة لحذفها.'); return; }
+            if (confirm(`هل أنت متأكد من حذف الفاتورة رقم ${invNum}؟`)) {
+                let invoices = JSON.parse(localStorage.getItem(savedInvoicesKey)) || [];
+                invoices = invoices.filter(i => i.invoiceNumber !== invNum);
+                localStorage.setItem(savedInvoicesKey, JSON.stringify(invoices));
+                populateSavedInvoicesList();
+                clearInvoiceFormAndPreview(false);
+                alert(`تم حذف الفاتورة رقم: ${invNum}`);
+            }
+        }
 
-    if (invoiceToLoad) {
-        document.getElementById('invoiceNumber').value = invoiceToLoad.invoiceNumber;
-        document.getElementById('invoiceDate').value = invoiceToLoad.invoiceDate;
-        document.getElementById('dueDate').value = invoiceToLoad.dueDate;
-        document.getElementById('accountNumber').value = invoiceToLoad.accountNumber;
-        document.getElementById('clientName').value = invoiceToLoad.clientName;
-        document.getElementById('clientAddress').value = invoiceToLoad.clientAddress;
-        document.getElementById('discountRate').value = invoiceToLoad.discountRate;
-        document.getElementById('termsConditions').value = invoiceToLoad.termsConditions;
-        // ... (تعبئة بقية حقول معلومات الشركة إذا تم حفظها مع الفاتورة)
+        function clearInvoiceFormAndPreview(showAlert = true) {
+            const formElements = document.querySelector('.invoice-form').elements;
+            for (let i = 0; i < formElements.length; i++) {
+                const field = formElements[i];
+                if (field.type === 'text' || field.type === 'number' || field.type === 'email' || field.type === 'date' || field.tagName.toLowerCase() === 'textarea') {
+                    if (field.id === 'discountRate') field.value = '0';
+                    else field.value = '';
+                } else if (field.type === 'file') { field.value = null; }
+                else if (field.tagName.toLowerCase() === 'select' && field.id !== 'savedInvoicesList' && field.id !== 'currency') { field.selectedIndex = 0;}
+            }
+            if(el('invoiceDate')) el('invoiceDate').value = getCurrentDate();
+            if(el('dueDate')) el('dueDate').value = getCurrentDate();
+            if(el('invoiceNumber')) el('invoiceNumber').value = `INV-${String(new Date().getTime()).slice(-4)}`;
+            el('invoiceItemsContainer').innerHTML = ''; itemCounter = 0; addInvoiceItem('', 1, 0.00);
+            const logo = el('previewLogo'); if (logo) logo.src = 'https://via.placeholder.com/200x100.png?text=ARC+Tech+Logo';
+            loadCompanyData(); updateAllPreviews();
+            if(el('savedInvoicesList')) el('savedInvoicesList').value = "";
+            if (showAlert) alert('تم تجهيز فاتورة جديدة.');
+        }
 
-        // مسح البنود الحالية وإضافة البنود المحفوظة
-        const itemsContainer = document.getElementById('invoiceItemsContainer');
-        itemsContainer.innerHTML = ''; // مسح البنود القديمة
-        itemCounter = 0; // إعادة تعيين عداد البنود
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf; const invElem = el('invoiceToPrint'); if (!invElem) return;
+            const imageScale = 1.8; const useJPEG = false; const jpegQuality = 0.75;
+            const form = document.querySelector('.invoice-form'); const actions = document.querySelector('.actions-buttons-container');
+            const origFormDisp = form ? form.style.display : ''; const origActDisp = actions ? actions.style.display : '';
+            if (form) form.style.display = 'none'; if (actions) actions.style.display = 'none';
+            
+            // ضمان أن كامل ارتفاع الفاتورة يؤخذ في الاعتبار
+            const scrollY = window.scrollY; // حفظ موضع التمرير الحالي
+            window.scrollTo(0,0); // التمرير للأعلى لضمان أن html2canvas يرى بداية الصفحة
 
-        invoiceToLoad.items.forEach(item => {
-            addInvoiceItem(item.description, item.quantity, item.price);
+            html2canvas(invElem, {
+                scale: imageScale, useCORS: true, logging: false,
+                width: invElem.offsetWidth, // العرض الفعلي للعنصر
+                height: invElem.scrollHeight, // الارتفاع الكلي للعنصر بما في ذلك الجزء غير المرئي بسبب التمرير
+                windowWidth: document.documentElement.scrollWidth, // عرض النافذة الكلي
+                windowHeight: document.documentElement.scrollHeight, // ارتفاع النافذة الكلي
+                scrollY: -window.scrollY // تعويض التمرير لضمان التقاط الجزء العلوي
+            }).then(canvas => {
+                window.scrollTo(0, scrollY); // إعادة موضع التمرير الأصلي
+
+                let imgData, imgType;
+                if (useJPEG) { imgData = canvas.toDataURL('image/jpeg', jpegQuality); imgType = 'JPEG'; }
+                else { imgData = canvas.toDataURL('image/png', 1.0); imgType = 'PNG'; }
+                const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+                const pdfW = pdf.internal.pageSize.getWidth(); const pdfH = pdf.internal.pageSize.getHeight();
+                const cAR = canvas.width / canvas.height; let imgW = pdfW; let imgH = pdfW / cAR;
+                if (imgH > pdfH) { imgH = pdfH; imgW = pdfH * cAR; }
+                const x = (pdfW - imgW) / 2; const y = 0;
+                pdf.addImage(imgData, imgType, x, y, imgW, imgH, undefined, 'FAST'); // FAST لضغط أفضل
+                const invNum = el('previewInvoiceNumber').textContent.trim().replace(/[^\w\s-]/gi, '').replace(/\s+/g, '_') || 'invoice';
+                pdf.save(`${invNum}.pdf`);
+                if (form) form.style.display = origFormDisp; if (actions) actions.style.display = origActDisp;
+            }).catch(err => {
+                window.scrollTo(0, scrollY); // إعادة موضع التمرير الأصلي في حالة الخطأ أيضًا
+                console.error("PDF Error:", err);
+                if (form) form.style.display = origFormDisp; if (actions) actions.style.display = origActDisp;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(el('invoiceDate')) el('invoiceDate').value = getCurrentDate();
+            if(el('dueDate')) el('dueDate').value = getCurrentDate();
+            if(el('invoiceNumber')) el('invoiceNumber').value = `INV-${String(new Date().getTime()).slice(-4)}`;
+            if(!el('invoiceItemsContainer').children.length){ addInvoiceItem('', 1, 0.00); }
+            loadCompanyData();
+            populateSavedInvoicesList();
+            updateAllPreviews();
         });
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>نظام فواتير ARC تيك</title>
+    <style>
+        :root {
+            --primary-color: #1A6D69; --secondary-color: #155A56; --light-gray: #f4f6f6;
+            --medium-gray: #e9ecef; --dark-gray: #333333; --border-color: #dce3e2;
+            --white: #ffffff; --text-color: #4a4a4a;
+        }
+        body { font-family: 'Tahoma','Arial',sans-serif; margin:0; padding:10px; /* Reduced padding for mobile */ background-color:var(--medium-gray); color:var(--text-color); direction:rtl; font-size:14px; /* Base font for mobile */ -webkit-text-size-adjust: 100%; /* Prevent iOS font scaling */ }
+        .container { display:flex; flex-direction:column; gap:20px; max-width:900px; margin:auto; }
+        .invoice-form { background-color:var(--white); padding:15px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+        .invoice-form h2, .invoice-form h3 { color:var(--primary-color); border-bottom:1px solid var(--border-color); padding-bottom:8px; margin-top:0; margin-bottom:12px; }
+        .invoice-form h2 { font-size:1.3em; } /* Adjusted for mobile */
+        .invoice-form h3 { font-size:1.1em; margin-top:15px; } /* Adjusted for mobile */
+        .form-group { margin-bottom:10px; }
+        .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px 8px; border:1px solid var(--border-color); border-radius:4px; font-size:0.9em; box-sizing:border-box; background-color:#fdfdfd; }
+        .form-group textarea { min-height:60px; }
+        .form-group ::placeholder { color:#888; opacity:1; font-size:0.9em; }
+        .company-data-actions button, .saved-invoices-section button { padding:8px 10px; font-size:0.8em; margin-left:5px;}
+        .saved-invoices-section select { margin-bottom: 5px; }
 
-        updateAllPreviews(); // تحديث المعاينة والحسابات
-        alert(`تم تحميل الفاتورة رقم: ${selectedInvoiceNumber}`);
-    }
-}
-function deleteSelectedInvoice() {
-    const selectElement = document.getElementById('savedInvoicesList');
-    const selectedInvoiceNumber = selectElement.value;
-    if (!selectedInvoiceNumber) {
-        alert('يرجى اختيار فاتورة لحذفها.');
-        return;
-    }
+        .item-row { display:flex; flex-wrap: wrap; /* Allow wrapping on small screens */ gap:5px; margin-bottom:8px; align-items:center; }
+        .item-row input.item-desc { flex-basis: 100%; margin-bottom: 5px; /* Full width on its own line */ }
+        .item-row input.item-qty { width:60px !important; flex-grow:1; text-align:center; }
+        .item-row input.item-price { width:80px !important; flex-grow:1; text-align:center; }
+        .item-row button.remove-item-btn { padding:8px 10px; font-size:0.85em; flex-shrink: 0; /* Prevent shrinking */ }
+        #addItemBtn { padding:9px 12px; font-size:0.95em; display: block; width: 100%; margin-top:10px; }
 
-    if (confirm(`هل أنت متأكد أنك تريد حذف الفاتورة رقم ${selectedInvoiceNumber}؟ هذا الإجراء لا يمكن التراجع عنه.`)) {
-        let savedInvoices = JSON.parse(localStorage.getItem(savedInvoicesKey)) || [];
-        savedInvoices = savedInvoices.filter(inv => inv.invoiceNumber !== selectedInvoiceNumber);
-        localStorage.setItem(savedInvoicesKey, JSON.stringify(savedInvoices));
-        populateSavedInvoicesList();
-        // clearInvoiceForm(); // اختياري: مسح النموذج بعد الحذف
-        alert(`تم حذف الفاتورة رقم: ${selectedInvoiceNumber}`);
-    }
-}
+        .invoice-preview-container { background-color:var(--white); box-shadow:0 3px 10px rgba(0,0,0,0.1); width:100%; max-width:794px; margin:0 auto; padding:0; border:1px solid #ccc; }
+        .invoice-preview { padding:20px 15px; /* Reduced padding for mobile */ }
+        .invoice-preview-header { display:flex; flex-direction: column-reverse; /* Stack company above invoice details on mobile */ align-items:center; /* Center align header items */ text-align:center; padding-bottom:15px; border-bottom:2px solid var(--primary-color); margin-bottom:15px; }
+        .header-left, .header-right { flex-basis:auto; width:100%; } /* Full width for stacked items */
+        .header-right { margin-bottom:15px; }
+        .header-right img#previewLogo { max-width:150px; max-height:75px; margin:0 auto 10px auto; display:block; } /* Adjusted logo size and centering */
+        .header-left h1 { font-size:1.8em; padding:8px 12px; margin-bottom:10px; display:block; }
+        .header-left .invoice-meta p { font-size:0.8em; }
+        .header-left .invoice-meta strong { display:inline-block; min-width:auto; margin-left:5px; }
+        .header-left .bill-to { margin-top:10px; font-size:0.85em;}
+
+        .invoice-items-wrapper { overflow-x:auto; margin-bottom: 15px;}
+        .items-table-visual { width:100%; min-width: 550px; /* Ensure table scrolls if content is wide */ border-collapse:collapse; font-size:0.8em; }
+        .items-table-visual th, .items-table-visual td { padding:6px 8px; }
+        /* ... (rest of table styles as before) ... */
+        .items-table-visual th.col-no, .items-table-visual td.col-no {width: 5%;}
+        .items-table-visual th.col-desc, .items-table-visual td.col-desc {width: auto; text-align: right;} /* auto for flexibility */
+        .items-table-visual th.col-price, .items-table-visual td.col-price {width: 20%;}
+        .items-table-visual th.col-qty, .items-table-visual td.col-qty {width: 15%;}
+        .items-table-visual th.col-total, .items-table-visual td.col-total {width: 20%;}
+        .items-table-visual tbody tr:nth-child(even) td { background-color:var(--light-gray); }
+
+
+        .invoice-summary-and-terms { display:flex; flex-direction:column; /* Stack on mobile */ margin-bottom:15px; font-size:0.85em; }
+        .summary-section { width:100%; text-align:left; margin-bottom:15px; }
+        .summary-section table { width:100%; max-width: 320px; /* Limit width on mobile */ margin: 0 auto 10px auto; /* Center summary table */ }
+        .summary-section td:first-child { width: auto; padding-left: 5px; } /* Allow label to take needed space */
+        .summary-section td:last-child { padding-left: 5px; }
+        .summary-section .grand-total-row td { font-size:1em; padding:7px 8px; }
+        .summary-section .signature-area { margin-top:20px; width:70%; margin-left:auto; margin-right:auto; }
+        .terms-section { width:100%; text-align:center; padding-right:0; } /* Center terms on mobile */
+        .terms-section h4 { font-size:0.9em; }
+        .terms-section p { font-size:0.8em; }
+
+        .invoice-preview-footer { padding:8px 0; font-size:0.75em; }
+        .invoice-preview-footer span { display:block; margin: 3px auto; text-align:center; } /* Stack footer items */
+
+        .actions-buttons-container { padding:10px; margin-top:15px; }
+        .actions-buttons-container button { padding:10px 15px; font-size:0.9em; display:block; width:100%; margin:8px 0; }
+
+
+        /* Larger screens - Tablet and Desktop */
+        @media (min-width: 768px) {
+            body { padding: 20px; font-size: 15px; }
+            .invoice-form { padding: 20px; }
+            .invoice-form h2 { font-size:1.5em; }
+            .invoice-form h3 { font-size:1.15em; }
+            .item-row input.item-desc { flex-basis:auto; margin-bottom: 0; } /* Reset for larger screens */
+            .item-row { flex-wrap: nowrap; }
+            #addItemBtn { display: inline-block; width: auto; }
+
+            .invoice-preview { padding:30px 35px; }
+            .invoice-preview-header { flex-direction:row; align-items:flex-start; text-align:inherit; }
+            .header-left { text-align:left; }
+            .header-right { text-align:right; }
+            .header-right img#previewLogo { max-width:200px; max-height:100px; margin-left:auto; margin-right:0; }
+            .header-left h1 { display:inline-block; }
+            .header-left .invoice-meta p, .header-left .bill-to { text-align:left; }
+            .header-left .invoice-meta strong { min-width:90px; }
+
+            .items-table-visual { min-width: auto; font-size:0.9em; }
+            .items-table-visual th, .items-table-visual td { padding:8px 10px; }
+
+            .invoice-summary-and-terms { flex-direction:row; font-size:0.9em; }
+            .summary-section { text-align:left; width:45%; }
+            .summary-section table { margin: 0 0 15px 0; max-width:none; }
+            .summary-section .signature-area { margin-left:0; }
+            .terms-section { text-align:right; width:50%; padding-right:20px; }
+            .terms-section h4, .terms-section p {text-align: right;}
+
+
+            .invoice-preview-footer span { display:inline-block; margin: 0 10px; }
+            .actions-buttons-container button { display:inline-block; width:auto; margin:5px; }
+        }
+
+        @media print {
+            body { background-color:var(--white) !important; padding:0; margin:0; font-size:9pt; -webkit-print-color-adjust:exact !important; color-adjust:exact !important; }
+            .container, .invoice-form, .actions-buttons-container { display:none !important; }
+            .invoice-preview-container { display:block !important; width:100% !important; max-width:none !important; margin:0 !important; padding:0 !important; box-shadow:none !important; border:none !important; }
+            .invoice-preview { padding:15mm !important; /* A4-like margins */ page-break-after:always; }
+            .invoice-preview-header { flex-direction:row !important; align-items:flex-start !important; text-align:inherit !important; } /* Restore desktop header */
+            .invoice-items-wrapper { overflow-x:visible !important; }
+            .items-table-visual { min-width:unset !important; font-size: 8.5pt !important; } /* Adjust table font for print */
+            .items-table-visual th, .items-table-visual td { padding: 5px 7px !important; }
+            .invoice-summary-and-terms { flex-direction:row !important; } /* Restore desktop summary */
+        }
+    </style>
+</head>
+<body>
+    <!-- ... (نفس محتوى HTML من الإجابة السابقة) ... -->
+    <div class="container">
+        <div class="invoice-form">
+            <h2>إعدادات فاتورة ARC تيك</h2>
+
+            <div class="saved-invoices-section form-group">
+                <h3>الفواتير المحفوظة</h3>
+                <select id="savedInvoicesList" onchange="loadSelectedInvoice()">
+                    <option value="">-- اختر فاتورة للتعديل --</option>
+                </select>
+                <button type="button" class="delete-btn" onclick="deleteSelectedInvoice()">حذف المختارة</button>
+                <button type="button" onclick="clearInvoiceFormAndPreview()" style="margin-right: 5px;">فاتورة جديدة</button>
+            </div>
+            <hr>
+
+            <div class="form-group">
+                <select id="currency" onchange="updateAllPreviews()">
+                    <option value="USD" data-symbol="$" selected>دولار أمريكي ($)</option>
+                    <option value="SAR" data-symbol="ر.س">ريال سعودي (ر.س)</option>
+                    <option value="YER" data-symbol="ر.ي">ريال يمني (ر.ي)</option>
+                </select>
+            </div>
+
+            <h3>
+                معلومات شركتك
+                <span class="company-data-actions">
+                    <button type="button" onclick="saveCompanyData()">حفظ بيانات الشركة</button>
+                    <button type="button" onclick="loadCompanyData()">استرجاع بيانات الشركة</button>
+                </span>
+            </h3>
+            <div class="form-group"><input type="file" id="companyLogo" accept="image/*" onchange="previewLogoImage(event)"></div>
+            <div class="form-group"><input type="text" id="brandName" placeholder="اسم الشركة" onkeyup="updatePreview('brandName', 'previewBrandName')"></div>
+            <div class="form-group"><input type="text" id="tagline" placeholder="وصف الشركة (اختياري)" onkeyup="updatePreview('tagline', 'previewTagline')"></div>
+            <div class="form-group"><input type="text" id="companyPaymentInfo1" placeholder="معلومة دفع 1 (مثال: Account)" onkeyup="updatePreview('companyPaymentInfo1', 'previewCompanyPaymentInfo1')"></div>
+            <div class="form-group"><input type="text" id="companyPaymentInfo2" placeholder="معلومة دفع 2 (مثال: A/c Name)" onkeyup="updatePreview('companyPaymentInfo2', 'previewCompanyPaymentInfo2')"></div>
+            <div class="form-group"><input type="text" id="companyFooterText" placeholder="نص الفوتر (مثال: بريد، هاتف، موقع)" onkeyup="updatePreview('companyFooterText', 'previewCompanyFooterText')"></div>
+
+            <h3>تفاصيل الفاتورة</h3>
+            <div class="form-group"><input type="text" id="invoiceNumber" placeholder="رقم الفاتورة" onkeyup="updatePreview('invoiceNumber', 'previewInvoiceNumber')"></div>
+            <div class="form-group"><input type="date" id="invoiceDate" placeholder="تاريخ الفاتورة" onchange="updatePreviewDate('invoiceDate', 'previewInvoiceDate')"></div>
+            <div class="form-group"><input type="date" id="dueDate" placeholder="تاريخ الاستحقاق" onchange="updatePreviewDate('dueDate', 'previewDueDate')"></div>
+            <div class="form-group"><input type="text" id="accountNumber" placeholder="رقم حساب العميل (إن وجد)" onkeyup="updatePreview('accountNumber', 'previewAccountNumber')"></div>
+
+            <h3>فاتورة إلى (Bill To)</h3>
+            <div class="form-group"><input type="text" id="clientName" placeholder="اسم العميل/الشركة" onkeyup="updatePreview('clientName', 'previewClientName')"></div>
+            <div class="form-group"><textarea id="clientAddress" placeholder="عنوان العميل" onkeyup="updatePreview('clientAddress', 'previewClientAddress', true)"></textarea></div>
+
+            <h3>بنود الفاتورة</h3>
+            <div id="invoiceItemsContainer"></div>
+            <button type="button" id="addItemBtn" onclick="addInvoiceItem()">إضافة بند +</button>
+
+            <h3>الملخص</h3>
+            <div class="form-group"><input type="number" id="discountRate" placeholder="نسبة الخصم (%)" value="0" min="0" max="100" step="0.01" oninput="calculateTotals()"></div>
+
+            <h3>نصوص إضافية</h3>
+            <div class="form-group"><textarea id="termsConditions" placeholder="الشروط والأحكام" onkeyup="updatePreview('termsConditions', 'previewTermsConditions', true)">شكراً لتعاملكم معنا.</textarea></div>
+        </div>
+
+        <div class="invoice-preview-container">
+            <div class="invoice-preview" id="invoiceToPrint">
+                <header class="invoice-preview-header">
+                    <div class="header-left">
+                        <h1>INVOICE</h1>
+                        <div class="invoice-meta">
+                            <p><strong>Invoice No:</strong> <span id="previewInvoiceNumber"></span></p>
+                            <p><strong>Date:</strong> <span id="previewInvoiceDate"></span></p>
+                            <p><strong>Due Date:</strong> <span id="previewDueDate"></span></p>
+                            <p><strong>Account No:</strong> <span id="previewAccountNumber"></span></p>
+                        </div>
+                        <div class="bill-to">
+                            <strong>BILL TO.</strong>
+                            <span id="previewClientName"></span>
+                            <span id="previewClientAddress"></span>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <img src="https://via.placeholder.com/200x100.png?text=ARC+Tech+Logo" alt="شعار الشركة" id="previewLogo">
+                        <div id="previewBrandName">ARC تيك</div>
+                        <div id="previewTagline">حلول تقنية متكاملة</div>
+                        <div class="payment-info-basic">
+                            <p><strong>Account:</strong> <span id="previewCompanyPaymentInfo1"></span></p>
+                            <p><strong>A/c Name:</strong> <span id="previewCompanyPaymentInfo2"></span></p>
+                        </div>
+                    </div>
+                </header>
+                <div class="invoice-items-wrapper">
+                    <table class="items-table-visual">
+                        <thead>
+                            <tr><th class="col-no">NO</th><th class="col-desc">PRODUCT DESCRIPTION</th><th class="col-price">UNIT PRICE</th><th class="col-qty">QTY</th><th class="col-total">TOTAL</th></tr>
+                        </thead>
+                        <tbody id="previewItemsTableBody"></tbody>
+                    </table>
+                </div>
+                <section class="invoice-summary-and-terms">
+                    <div class="summary-section">
+                        <table>
+                            <tr><td>المجموع الفرعي</td><td><span id="previewSubtotal"></span></td></tr>
+                            <tr id="previewDiscountRow" style="display:none;"><td>الخصم (<span id="previewDiscountRate">0</span>%)</td><td><span id="previewDiscountAmount"></span></td></tr>
+                            <tr class="grand-total-row"><td>الإجمالي الكلي</td><td><span id="previewGrandTotal"></span></td></tr>
+                        </table>
+                        <div class="signature-area">التوقيع</div>
+                    </div>
+                    <div class="terms-section">
+                        <h4>الشروط والأحكام</h4>
+                        <p id="previewTermsConditions"></p>
+                    </div>
+                </section>
+                <footer class="invoice-preview-footer"><span id="previewCompanyFooterText"></span></footer>
+            </div>
+        </div>
+        <div class="actions-buttons-container">
+            <button onclick="saveCurrentInvoice()">حفظ/تحديث الفاتورة</button>
+            <button onclick="window.print()">طباعة الفاتورة</button>
+            <button class="pdf-btn" onclick="downloadPDF()">تنزيل كـ PDF</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // --- JavaScript (نفس الكود من الإجابة السابقة) ---
+        // ... (انسخ والصق كامل كود JavaScript من الإجابة السابقة هنا) ...
+        // يتضمن: itemCounter, currentCurrencySymbol, companyDataKey, savedInvoicesKey, companyFields
+        // والدوال: el, getCurrentDate, getCurrentDisplayDate, updatePreview, updatePreviewDate,
+        // previewLogoImage, addInvoiceItem, removeInvoiceItem, formatCurrency, calculateTotals,
+        // updateAllPreviews, saveCompanyData, loadCompanyData, saveCurrentInvoice,
+        // populateSavedInvoicesList, loadSelectedInvoice, deleteSelectedInvoice,
+        // clearInvoiceFormAndPreview, downloadPDF (المعدلة), و event listener لـ DOMContentLoaded
+        let itemCounter = 0;
+        let currentCurrencySymbol = '$';
+        const companyDataKey = 'arcTechCompanyData_v1';
+        const savedInvoicesKey = 'arcTechSavedInvoices_v1';
+        const companyFields = ['brandName', 'tagline', 'companyPaymentInfo1', 'companyPaymentInfo2', 'companyFooterText'];
+
+        function el(id) { return document.getElementById(id); }
+
+        function getCurrentDate() { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
+        function getCurrentDisplayDate() { const n = new Date(); return `${String(n.getDate()).padStart(2,'0')}/${String(n.getMonth()+1).padStart(2,'0')}/${n.getFullYear()}`; }
+
+        function updatePreview(inputId, previewId, isTextarea = false) {
+            const input = el(inputId); const preview = el(previewId);
+            if (input && preview) preview[isTextarea ? 'innerText' : 'textContent'] = input.value;
+        }
+
+        function updatePreviewDate(inputId, previewId) {
+            const input = el(inputId); const preview = el(previewId);
+            if (input && preview) {
+                const dateVal = input.value;
+                if (dateVal) { const [y,m,d] = dateVal.split('-'); preview.textContent = `${d}/${m}/${y}`; }
+                else { preview.textContent = (inputId === 'invoiceDate') ? getCurrentDisplayDate() : ''; }
+            }
+        }
+
+        function previewLogoImage(event) {
+            const reader = new FileReader(); const output = el('previewLogo'); if (!output) return;
+            reader.onload = function(){ output.src = reader.result; };
+            if (event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+            else output.src = 'https://via.placeholder.com/200x100.png?text=ARC+Tech+Logo';
+        }
+
+        function addInvoiceItem(description = '', quantity = 1, price = 0.00) {
+            itemCounter++;
+            const container = el('invoiceItemsContainer'); if (!container) return;
+            const row = document.createElement('div'); row.className = 'item-row'; row.id = `item-row-${itemCounter}`;
+            row.innerHTML = `
+                <input type="text" class="item-desc" placeholder="وصف البند" value="${description}" oninput="calculateTotals()">
+                <input type="number" class="item-qty" value="${quantity}" min="0" placeholder="الكمية" oninput="calculateTotals()">
+                <input type="number" class="item-price" value="${parseFloat(price).toFixed(2)}" step="0.01" placeholder="السعر" oninput="calculateTotals()">
+                <button type="button" class="remove-item-btn" onclick="removeInvoiceItem('item-row-${itemCounter}')">X</button>`;
+            container.appendChild(row);
+            calculateTotals();
+        }
+
+        function removeInvoiceItem(rowId) { const row = el(rowId); if (row) row.remove(); calculateTotals(); }
+        function formatCurrency(amount) { return `${currentCurrencySymbol} ${parseFloat(amount).toFixed(2)}`; }
+
+        function calculateTotals() {
+            const itemsCont = el('invoiceItemsContainer'); const tableBody = el('previewItemsTableBody');
+            if (!itemsCont || !tableBody) return;
+            tableBody.innerHTML = ''; let subtotal = 0; let num = 0;
+
+            Array.from(itemsCont.children).forEach(r => {
+                if (!r.classList.contains('item-row')) return; num++;
+                const desc = r.querySelector('.item-desc').value;
+                const qty = parseFloat(r.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(r.querySelector('.item-price').value) || 0;
+                const total = qty * price; subtotal += total;
+                const pR = tableBody.insertRow();
+                pR.insertCell().outerHTML=`<td class="col-no">${String(num).padStart(2,'0')}</td>`;
+                pR.insertCell().outerHTML=`<td class="col-desc">${desc}</td>`;
+                pR.insertCell().outerHTML=`<td class="col-price">${formatCurrency(price)}</td>`;
+                pR.insertCell().outerHTML=`<td class="col-qty">${qty}</td>`;
+                pR.insertCell().outerHTML=`<td class="col-total">${formatCurrency(total)}</td>`;
+            });
+
+            const discInput = el('discountRate'); const discPerc = discInput ? parseFloat(discInput.value) || 0 : 0;
+            const discAmount = (subtotal * discPerc) / 100;
+            const grandTotal = subtotal - discAmount;
+
+            if(el('previewSubtotal')) el('previewSubtotal').textContent = formatCurrency(subtotal);
+            if(el('previewDiscountRate')) el('previewDiscountRate').textContent = discPerc;
+            if(el('previewDiscountAmount')) el('previewDiscountAmount').textContent = formatCurrency(discAmount);
+            if(el('previewGrandTotal')) el('previewGrandTotal').textContent = formatCurrency(grandTotal);
+            const discRow = el('previewDiscountRow'); if(discRow) discRow.style.display = discPerc > 0 ? 'table-row' : 'none';
+        }
+
+        function updateAllPreviews() {
+            const currSelect = el('currency'); if (currSelect) currentCurrencySymbol = currSelect.options[currSelect.selectedIndex].dataset.symbol;
+            companyFields.forEach(id => updatePreview(id, `preview${id.charAt(0).toUpperCase() + id.slice(1)}`));
+            updatePreview('invoiceNumber', 'previewInvoiceNumber'); updatePreviewDate('invoiceDate', 'previewInvoiceDate');
+            updatePreviewDate('dueDate', 'previewDueDate'); updatePreview('accountNumber', 'previewAccountNumber');
+            updatePreview('clientName', 'previewClientName'); updatePreview('clientAddress', 'previewClientAddress', true);
+            updatePreview('termsConditions', 'previewTermsConditions', true);
+            calculateTotals();
+        }
+
+        function saveCompanyData() {
+            const data = {}; companyFields.forEach(id => { const input = el(id); if (input) data[id] = input.value; });
+            const logo = el('previewLogo');
+            if (logo && logo.src && !logo.src.includes('via.placeholder.com')) data.companyLogoSrc = logo.src; else data.companyLogoSrc = '';
+            localStorage.setItem(companyDataKey, JSON.stringify(data)); alert('تم حفظ بيانات الشركة!');
+        }
+
+        function loadCompanyData() {
+            const saved = localStorage.getItem(companyDataKey);
+            if (saved) {
+                const data = JSON.parse(saved);
+                companyFields.forEach(id => { const input = el(id); if (input && data[id] !== undefined) input.value = data[id]; });
+                const logo = el('previewLogo');
+                if (logo && data.companyLogoSrc) logo.src = data.companyLogoSrc;
+                else if (logo) logo.src = 'https://via.placeholder.com/200x100.png?text=ARC+Tech+Logo';
+            }
+        }
+
+        function saveCurrentInvoice() {
+            const invNum = el('invoiceNumber').value.trim(); if (!invNum) { alert('يرجى إدخال رقم الفاتورة.'); return; }
+            const invData = {
+                invoiceNumber: invNum, invoiceDate: el('invoiceDate').value, dueDate: el('dueDate').value,
+                accountNumber: el('accountNumber').value, clientName: el('clientName').value, clientAddress: el('clientAddress').value,
+                discountRate: el('discountRate').value, termsConditions: el('termsConditions').value,
+                companyDetails: {}, items: []
+            };
+            companyFields.forEach(id => { const input = el(id); if (input) invData.companyDetails[id] = input.value; });
+            const logo = el('previewLogo');
+            if (logo && logo.src && !logo.src.includes('via.placeholder.com')) invData.companyDetails.companyLogoSrc = logo.src;
+            else invData.companyDetails.companyLogoSrc = '';
+
+            const itemsCont = el('invoiceItemsContainer');
+            Array.from(itemsCont.children).forEach(r => {
+                if (r.classList.contains('item-row')) {
+                    invData.items.push({
+                        description: r.querySelector('.item-desc').value,
+                        quantity: r.querySelector('.item-qty').value,
+                        price: r.querySelector('.item-price').value
+                    });
+                }
+            });
+
+            let invoices = JSON.parse(localStorage.getItem(savedInvoicesKey)) || [];
+            const idx = invoices.findIndex(i => i.invoiceNumber === invNum);
+            if (idx > -1) invoices[idx] = invData; else invoices.push(invData);
+            localStorage.setItem(savedInvoicesKey, JSON.stringify(invoices));
+            alert(idx > -1 ? 'تم تحديث الفاتورة!' : 'تم حفظ الفاتورة!');
+            populateSavedInvoicesList();
+        }
+
+        function populateSavedInvoicesList() {
+            const select = el('savedInvoicesList'); select.innerHTML = '<option value="">-- اختر فاتورة للتعديل --</option>';
+            const invoices = JSON.parse(localStorage.getItem(savedInvoicesKey)) || [];
+            invoices.sort((a, b) => (a.invoiceNumber > b.invoiceNumber) ? 1 : -1);
+            invoices.forEach(inv => {
+                const opt = document.createElement('option');
+                opt.value = inv.invoiceNumber;
+                opt.textContent = `فاتورة: ${inv.invoiceNumber} (عميل: ${inv.clientName || 'N/A'})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function loadSelectedInvoice() {
+            const select = el('savedInvoicesList'); const invNum = select.value;
+            if (!invNum) { clearInvoiceFormAndPreview(false); return; }
+            const invoices = JSON.parse(localStorage.getItem(savedInvoicesKey)) || [];
+            const invToLoad = invoices.find(i => i.invoiceNumber === invNum);
+            if (invToLoad) {
+                if (invToLoad.companyDetails) {
+                    companyFields.forEach(id => { const input = el(id); if (input && invToLoad.companyDetails[id] !== undefined) input.value = invToLoad.companyDetails[id]; });
+                    const logo = el('previewLogo');
+                    if (logo && invToLoad.companyDetails.companyLogoSrc) logo.src = invToLoad.companyDetails.companyLogoSrc;
+                    else if (logo) logo.src = 'https://via.placeholder.com/200x100.png?text=ARC+Tech+Logo';
+                }
+
+                el('invoiceNumber').value = invToLoad.invoiceNumber; el('invoiceDate').value = invToLoad.invoiceDate;
+                el('dueDate').value = invToLoad.dueDate; el('accountNumber').value = invToLoad.accountNumber;
+                el('clientName').value = invToLoad.clientName; el('clientAddress').value = invToLoad.clientAddress;
+                el('discountRate').value = invToLoad.discountRate; el('termsConditions').value = invToLoad.termsConditions;
+
+                const itemsCont = el('invoiceItemsContainer'); itemsCont.innerHTML = ''; itemCounter = 0;
+                invToLoad.items.forEach(item => addInvoiceItem(item.description, item.quantity, item.price));
+                updateAllPreviews();
+                alert(`تم تحميل الفاتورة رقم: ${invNum}`);
+            }
+        }
+
+        function deleteSelectedInvoice() {
+            const select = el('savedInvoicesList'); const invNum = select.value;
+            if (!invNum) { alert('يرجى اختيار فاتورة لحذفها.'); return; }
+            if (confirm(`هل أنت متأكد من حذف الفاتورة رقم ${invNum}؟`)) {
+                let invoices = JSON.parse(localStorage.getItem(savedInvoicesKey)) || [];
+                invoices = invoices.filter(i => i.invoiceNumber !== invNum);
+                localStorage.setItem(savedInvoicesKey, JSON.stringify(invoices));
+                populateSavedInvoicesList();
+                clearInvoiceFormAndPreview(false);
+                alert(`تم حذف الفاتورة رقم: ${invNum}`);
+            }
+        }
+
+        function clearInvoiceFormAndPreview(showAlert = true) {
+            const formElements = document.querySelector('.invoice-form').elements;
+            for (let i = 0; i < formElements.length; i++) {
+                const field = formElements[i];
+                if (field.type === 'text' || field.type === 'number' || field.type === 'email' || field.type === 'date' || field.tagName.toLowerCase() === 'textarea') {
+                    if (field.id === 'discountRate') field.value = '0';
+                    else field.value = '';
+                } else if (field.type === 'file') { field.value = null; }
+                else if (field.tagName.toLowerCase() === 'select' && field.id !== 'savedInvoicesList' && field.id !== 'currency') { field.selectedIndex = 0;}
+            }
+            if(el('invoiceDate')) el('invoiceDate').value = getCurrentDate();
+            if(el('dueDate')) el('dueDate').value = getCurrentDate();
+            if(el('invoiceNumber')) el('invoiceNumber').value = `INV-${String(new Date().getTime()).slice(-4)}`;
+            el('invoiceItemsContainer').innerHTML = ''; itemCounter = 0; addInvoiceItem('', 1, 0.00);
+            const logo = el('previewLogo'); if (logo) logo.src = 'https://via.placeholder.com/200x100.png?text=ARC+Tech+Logo';
+            loadCompanyData(); updateAllPreviews();
+            if(el('savedInvoicesList')) el('savedInvoicesList').value = "";
+            if (showAlert) alert('تم تجهيز فاتورة جديدة.');
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf; const invElem = el('invoiceToPrint'); if (!invElem) return;
+            const imageScale = 1.8; const useJPEG = false; const jpegQuality = 0.75;
+            const form = document.querySelector('.invoice-form'); const actions = document.querySelector('.actions-buttons-container');
+            const origFormDisp = form ? form.style.display : ''; const origActDisp = actions ? actions.style.display : '';
+            if (form) form.style.display = 'none'; if (actions) actions.style.display = 'none';
+            
+            // ضمان أن كامل ارتفاع الفاتورة يؤخذ في الاعتبار
+            const scrollY = window.scrollY; // حفظ موضع التمرير الحالي
+            window.scrollTo(0,0); // التمرير للأعلى لضمان أن html2canvas يرى بداية الصفحة
+
+            html2canvas(invElem, {
+                scale: imageScale, useCORS: true, logging: false,
+                width: invElem.offsetWidth, // العرض الفعلي للعنصر
+                height: invElem.scrollHeight, // الارتفاع الكلي للعنصر بما في ذلك الجزء غير المرئي بسبب التمرير
+                windowWidth: document.documentElement.scrollWidth, // عرض النافذة الكلي
+                windowHeight: document.documentElement.scrollHeight, // ارتفاع النافذة الكلي
+                scrollY: -window.scrollY // تعويض التمرير لضمان التقاط الجزء العلوي
+            }).then(canvas => {
+                window.scrollTo(0, scrollY); // إعادة موضع التمرير الأصلي
+
+                let imgData, imgType;
+                if (useJPEG) { imgData = canvas.toDataURL('image/jpeg', jpegQuality); imgType = 'JPEG'; }
+                else { imgData = canvas.toDataURL('image/png', 1.0); imgType = 'PNG'; }
+                const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+                const pdfW = pdf.internal.pageSize.getWidth(); const pdfH = pdf.internal.pageSize.getHeight();
+                const cAR = canvas.width / canvas.height; let imgW = pdfW; let imgH = pdfW / cAR;
+                if (imgH > pdfH) { imgH = pdfH; imgW = pdfH * cAR; }
+                const x = (pdfW - imgW) / 2; const y = 0;
+                pdf.addImage(imgData, imgType, x, y, imgW, imgH, undefined, 'FAST'); // FAST لضغط أفضل
+                const invNum = el('previewInvoiceNumber').textContent.trim().replace(/[^\w\s-]/gi, '').replace(/\s+/g, '_') || 'invoice';
+                pdf.save(`${invNum}.pdf`);
+                if (form) form.style.display = origFormDisp; if (actions) actions.style.display = origActDisp;
+            }).catch(err => {
+                window.scrollTo(0, scrollY); // إعادة موضع التمرير الأصلي في حالة الخطأ أيضًا
+                console.error("PDF Error:", err);
+                if (form) form.style.display = origFormDisp; if (actions) actions.style.display = origActDisp;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(el('invoiceDate')) el('invoiceDate').value = getCurrentDate();
+            if(el('dueDate')) el('dueDate').value = getCurrentDate();
+            if(el('invoiceNumber')) el('invoiceNumber').value = `INV-${String(new Date().getTime()).slice(-4)}`;
+            if(!el('invoiceItemsContainer').children.length){ addInvoiceItem('', 1, 0.00); }
+            loadCompanyData();
+            populateSavedInvoicesList();
+            updateAllPreviews();
+        });
     </script>
 </body>
 </html>
